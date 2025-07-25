@@ -1,14 +1,95 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>KIforME Dashboard</title>
   <style>
-    body { font-family: Arial; text-align: center; margin-top: 100px; }
+    body {
+      background-color: #101010;
+      color: #f0f0f0;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      color: #00d4ff;
+    }
+    .section {
+      margin: 25px 0;
+      padding: 15px;
+      border: 1px solid #444;
+      border-radius: 8px;
+      background-color: #1e1e1e;
+    }
+    .status {
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+    .btn {
+      padding: 10px 20px;
+      margin: 5px;
+      background-color: #00d4ff;
+      border: none;
+      border-radius: 5px;
+      color: #101010;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn:hover {
+      background-color: #00aacc;
+    }
+    .stats {
+      font-family: monospace;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
-  <h1>Willkommen im KIforME Dashboard 🎯</h1>
-  <p>Der Zugang war erfolgreich. Hier entsteht deine WebApp.</p>
+
+  <h1>Martin’s KIforME Dashboard</h1>
+
+  <div class="section">
+    <div class="status">🧠 Aktueller Modus: <strong id="modus">Hybrid</strong></div>
+    <button class="btn" onclick="wechselModus()">🔁 Modus wechseln</button>
+    <button class="btn" onclick="pauseTrader()">⏸️ Trader pausieren</button>
+    <button class="btn" onclick="setzeRisiko()">⚙️ Risiko setzen</button>
+  </div>
+
+  <div class="section">
+    <h3>📈 Heutiger Status</h3>
+    <div class="stats">
+      ⏳ Setups geprüft: <span id="geprueft">17</span><br>
+      ✅ Trades umgesetzt: <span id="umgesetzt">4</span><br>
+      💰 P/L heute: <span id="pl">+34,80 €</span><br>
+      🕓 Nächste Prüfung: <span id="naechste">09:15 Uhr</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>🔌 Verbindungen</h3>
+    <div class="stats">
+      ✅ Telegram: <strong>Aktiv</strong><br>
+      🟡 Discord: <strong>In Vorbereitung</strong><br>
+      ✅ WebApp: <strong>Live</strong><br>
+    </div>
+  </div>
+
+  <script>
+    function wechselModus() {
+      const modus = document.getElementById("modus");
+      modus.textContent = modus.textContent === "Hybrid" ? "Auto" : "Hybrid";
+      alert("Modus wurde umgeschaltet auf: " + modus.textContent);
+    }
+
+    function pauseTrader() {
+      alert("Trader wurden pausiert.");
+    }
+
+    function setzeRisiko() {
+      const risiko = prompt("Welches Risiko (%) soll gesetzt werden?", "1.0");
+      if (risiko) alert("Risiko wurde auf " + risiko + "% gesetzt.");
+    }
+  </script>
+
 </body>
 </html>
