@@ -2,187 +2,201 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Martin’s KI-Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KI Trading Dashboard</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0; padding: 0;
-      background-color: #f4f4f4;
+      background-color: #f8f9fa;
+      color: #222;
     }
     header {
-      background-color: #2c3e50; color: white;
-      padding: 10px 15px; text-align: center;
+      background-color: #2e86de;
+      color: white;
+      padding: 1rem;
+      text-align: center;
     }
-    .section { padding: 15px; }
-    .card {
-      background: white; margin: 10px 0; padding: 10px;
-      border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem;
+      background: #dff9fb;
+      border-bottom: 1px solid #ccc;
     }
-    input, select, button {
-      padding: 8px; margin: 5px 0; width: 100%;
-      box-sizing: border-box; border-radius: 4px;
+    .dashboard {
+      padding: 1rem;
+    }
+    .trade-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    .trade-table th, .trade-table td {
+      padding: 0.5rem;
       border: 1px solid #ccc;
+      text-align: left;
     }
-    .button-primary {
-      background: #3498db; color: white; border: none;
+    .trade-table th {
+      background: #dcdde1;
     }
-    .button-danger {
-      background: #e74c3c; color: white; border: none;
+    .trade-table tr.buy { background-color: #d4efdf; }
+    .trade-table tr.sell { background-color: #f5b7b1; }
+
+    .controls {
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
-    .status-indicator {
-      font-weight: bold; padding: 5px 10px;
-      border-radius: 4px; display: inline-block;
+
+    button, select {
+      padding: 0.5rem;
+      font-size: 1rem;
+      cursor: pointer;
     }
-    .status-on { background: #2ecc71; color: white; }
-    .status-off { background: #e74c3c; color: white; }
-    .filter-group {
-      display: flex; gap: 10px; flex-wrap: wrap;
+
+    .platform-btn {
+      background: #95a5a6;
+      color: white;
+      border: none;
+      border-radius: 4px;
     }
-    table {
-      width: 100%; border-collapse: collapse; margin-top: 10px;
+
+    .active {
+      background: #2ecc71 !important;
     }
-    th, td {
-      border: 1px solid #ccc; padding: 8px; text-align: center;
+
+    .mode-toggle {
+      background: #e67e22;
+      color: white;
+      border: none;
+      border-radius: 4px;
     }
-    th { background-color: #ecf0f1; }
-    .download-link {
-      text-align: right; margin-top: 10px;
+
+    .pdf-report {
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 600px) {
+      .status-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .controls {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body>
 
-<header>
-  <h2>Martin’s KI-Copytrading Dashboard</h2>
-  <div>
-    KI-Modus:
-    <span id="ai-status" class="status-indicator status-off">Hybridmodus</span>
-    <button onclick="toggleAI()" class="button-primary">Modus umschalten</button>
+  <header>
+    <h1>Martin's KI-Trading Dashboard</h1>
+  </header>
+
+  <div class="status-bar">
+    <div><strong>KI-Modus:</strong> <span id="ki-mode">Hybridmodus</span></div>
+    <button class="mode-toggle" onclick="toggleMode()">Modus umschalten</button>
   </div>
-</header>
 
-<div class="section card">
-  <h3>Login AvaTrade</h3>
-  <input type="text" id="avaUser" placeholder="Benutzername (z.B. 88784608)">
-  <input type="password" id="avaPass" placeholder="Passwort">
-  <input type="text" id="avaServer" placeholder="Server (z.B. Ava-Real 1-MT5)">
-  <button class="button-primary" onclick="connectAva()">Verbinden</button>
-</div>
+  <div class="dashboard">
+    <div class="controls">
+      <select id="platform-filter" onchange="filterTrades()">
+        <option value="all">Alle Plattformen</option>
+        <option value="ava">AvaTrade</option>
+        <option value="naga">NAGA</option>
+      </select>
+      <button onclick="setRisk()">Risiko einstellen</button>
+      <button onclick="refreshTrades()">Trades aktualisieren</button>
+      <button onclick="downloadPDF()">📄 Tagesreport herunterladen</button>
+    </div>
 
-<div class="section card">
-  <h3>Login NAGA</h3>
-  <input type="text" id="nagaUser" placeholder="Benutzername (z.B. Martin140569)">
-  <input type="password" id="nagaPass" placeholder="Passwort">
-  <button class="button-primary" onclick="connectNaga()">Verbinden</button>
-</div>
+    <table class="trade-table" id="trades-table">
+      <thead>
+        <tr>
+          <th>Plattform</th>
+          <th>Symbol</th>
+          <th>Trader</th>
+          <th>Richtung</th>
+          <th>Lot</th>
+          <th>SL/TP</th>
+          <th>Status</th>
+          <th>Aktion</th>
+        </tr>
+      </thead>
+      <tbody id="trades-body">
+        <!-- Dynamisch per JS -->
+      </tbody>
+    </table>
 
-<div class="section card">
-  <h3>Kontostand & Risiko</h3>
-  <div>Kontostand: <span id="balance">--</span> €</div>
-  <label for="riskLevel">Risikostufe (1–10):</label>
-  <input type="number" id="riskLevel" min="1" max="10" value="5">
-  <button class="button-primary" onclick="setRisk()">Übernehmen</button>
-</div>
-
-<div class="section card">
-  <h3>Filter</h3>
-  <div class="filter-group">
-    <select id="platformFilter">
-      <option value="">Alle Plattformen</option>
-      <option value="ava">AvaTrade</option>
-      <option value="naga">NAGA</option>
-    </select>
-    <select id="traderFilter">
-      <option value="">Alle Trader</option>
-      <!-- Dynamisch befüllbar -->
-    </select>
+    <div class="pdf-report">
+      <h3>📥 PDF-Tagesreport</h3>
+      <p><a href="daily_report.pdf" download>Klicke hier zum Herunterladen</a></p>
+    </div>
   </div>
-</div>
 
-<div class="section card">
-  <h3>Offene Trades</h3>
-  <table id="tradeTable">
-    <thead>
-      <tr>
-        <th>Plattform</th><th>Trader</th><th>Symbol</th><th>Lot</th>
-        <th>Buy/Sell</th><th>SL</th><th>TP</th><th>Ergebnis</th><th>Aktion</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- dynamisch -->
-    </tbody>
-  </table>
-</div>
+  <script>
+    let mode = 'Hybridmodus';
 
-<div class="section card">
-  <h3>Tagesreport</h3>
-  <iframe src="https://your-server.com/reports/tagesreport.pdf" width="100%" height="400px"></iframe>
-  <div class="download-link">
-    <a href="https://your-server.com/reports/tagesreport.pdf" download>📥 PDF herunterladen</a>
-  </div>
-</div>
+    const exampleTrades = [
+      { platform: 'ava', symbol: 'EUR/USD', trader: 'KI-Bot', direction: 'buy', lot: 0.5, sl: '1.0940', tp: '1.1000', status: 'Offen' },
+      { platform: 'naga', symbol: 'DAX40', trader: 'TraderX', direction: 'sell', lot: 0.2, sl: '16300', tp: '15900', status: 'Offen' },
+    ];
 
-<script>
-let aiOn = false;
-function toggleAI() {
-  aiOn = !aiOn;
-  const indicator = document.getElementById("ai-status");
-  indicator.textContent = aiOn ? "Vollautomatik" : "Hybridmodus";
-  indicator.className = aiOn ? "status-indicator status-on" : "status-indicator status-off";
-  // → Backend-Call hier z.B. fetch('/api/set-ai?mode=' + (aiOn ? 'auto' : 'manual'))
-}
+    function toggleMode() {
+      mode = (mode === 'Hybridmodus') ? 'Vollautomatik' : 'Hybridmodus';
+      document.getElementById('ki-mode').textContent = mode;
+    }
 
-function connectAva() {
-  const user = document.getElementById("avaUser").value;
-  const pass = document.getElementById("avaPass").value;
-  const server = document.getElementById("avaServer").value;
-  alert(`AvaTrade-Verbindung wird aufgebaut für ${user} auf ${server}`);
-  // → fetch('/api/connect-ava', { ... })
-}
+    function setRisk() {
+      const risk = prompt('Welches Risiko (%) soll eingestellt werden?', '2');
+      if (risk) alert(`Risiko wurde auf ${risk}% gesetzt.`);
+    }
 
-function connectNaga() {
-  const user = document.getElementById("nagaUser").value;
-  const pass = document.getElementById("nagaPass").value;
-  alert(`NAGA-Verbindung wird aufgebaut für ${user}`);
-  // → fetch('/api/connect-naga', { ... })
-}
+    function refreshTrades() {
+      renderTrades(exampleTrades);
+      alert('Trades wurden aktualisiert (Platzhalter)');
+    }
 
-function setRisk() {
-  const level = document.getElementById("riskLevel").value;
-  alert(`Risikostufe auf ${level} gesetzt.`);
-  // → fetch('/api/set-risk', { ... })
-}
+    function filterTrades() {
+      const filter = document.getElementById('platform-filter').value;
+      const filtered = (filter === 'all') ? exampleTrades : exampleTrades.filter(t => t.platform === filter);
+      renderTrades(filtered);
+    }
 
-// Fake-Trade Daten zum Testen
-document.addEventListener("DOMContentLoaded", () => {
-  const tbody = document.querySelector("#tradeTable tbody");
-  const trades = [
-    {plattform: "AvaTrade", trader: "AI", symbol: "EUR/USD", lot: 0.5, type: "Buy", sl: "1.0920", tp: "1.0980", result: "+12 €"},
-    {plattform: "NAGA", trader: "HansFX", symbol: "Gold", lot: 1.0, type: "Sell", sl: "1945", tp: "1925", result: "-7 €"},
-  ];
-  for (const t of trades) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${t.plattform}</td>
-      <td>${t.trader}</td>
-      <td>${t.symbol}</td>
-      <td>${t.lot}</td>
-      <td>${t.type}</td>
-      <td>${t.sl}</td>
-      <td>${t.tp}</td>
-      <td>${t.result}</td>
-      <td><button class="button-danger" onclick="closeTrade('${t.symbol}')">❌</button></td>
-    `;
-    tbody.appendChild(tr);
-  }
-});
+    function closeTrade(symbol) {
+      alert(`Trade ${symbol} wird geschlossen (Platzhalter)`);
+    }
 
-function closeTrade(symbol) {
-  alert(`Trade ${symbol} wird geschlossen...`);
-  // → fetch('/api/close-trade?symbol=' + symbol)
-}
-</script>
+    function downloadPDF() {
+      alert("PDF-Download wurde gestartet (Platzhalter)");
+    }
+
+    function renderTrades(trades) {
+      const tbody = document.getElementById('trades-body');
+      tbody.innerHTML = '';
+      trades.forEach(t => {
+        const row = document.createElement('tr');
+        row.className = t.direction;
+        row.innerHTML = `
+          <td>${t.platform === 'ava' ? 'AvaTrade' : 'NAGA'}</td>
+          <td>${t.symbol}</td>
+          <td>${t.trader}</td>
+          <td>${t.direction.toUpperCase()}</td>
+          <td>${t.lot}</td>
+          <td>${t.sl} / ${t.tp}</td>
+          <td>${t.status}</td>
+          <td><button onclick="closeTrade('${t.symbol}')">Schließen</button></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    window.onload = () => {
+      renderTrades(exampleTrades);
+    };
+  </script>
 
 </body>
 </html>
