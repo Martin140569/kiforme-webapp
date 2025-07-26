@@ -2,184 +2,192 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>KIforME Dashboard</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f5f7fa;
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      background: #f4f4f4;
     }
-    h1 {
+    header {
+      background: #1e90ff;
+      color: white;
+      padding: 1rem;
       text-align: center;
     }
-    .status-section, .report-section, .filter-section, .trades-section {
-      margin: 20px auto;
-      max-width: 800px;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    main {
+      padding: 1rem;
     }
-    .status-btn {
-      display: inline-block;
-      padding: 10px 20px;
-      margin: 5px;
+    .status {
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      background: #e0e0e0;
+      border-radius: 6px;
+    }
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+    button {
+      flex: 1 1 150px;
+      padding: 0.7rem;
+      font-size: 1rem;
       border: none;
-      border-radius: 5px;
+      border-radius: 4px;
       cursor: pointer;
-      font-weight: bold;
     }
-    .active {
-      background: #4caf50;
-      color: #fff;
+    .active { background: #28a745; color: white; }
+    .inactive { background: #dc3545; color: white; }
+    .section {
+      margin-bottom: 1rem;
     }
-    .paused {
-      background: #f44336;
-      color: #fff;
-    }
-    .neutral {
-      background: #607d8b;
-      color: #fff;
-    }
-    table {
+    .trade-table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
     }
-    th, td {
+    .trade-table th, .trade-table td {
       border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
+      padding: 0.4rem;
+      text-align: left;
     }
-    th {
-      background: #e0e0e0;
+    .trade-table th {
+      background: #f0f0f0;
     }
-    .filter-input {
-      margin-right: 10px;
-      padding: 6px;
+    .filter-group {
+      margin: 0.5rem 0;
+    }
+    #pdf-container {
+      border: 1px solid #ccc;
+      height: 400px;
+      overflow: auto;
+      margin-bottom: 1rem;
     }
     @media (max-width: 600px) {
-      table, th, td {
-        font-size: 12px;
-      }
-      .status-btn {
-        width: 100%;
-        margin: 5px 0;
-      }
+      .button-group { flex-direction: column; }
     }
   </style>
 </head>
 <body>
-  <h1>KIforME Dashboard</h1>
+  <header>
+    <h1>KIforME Copytrading Dashboard</h1>
+  </header>
+  <main>
+    <div class="status">
+      <strong>KI-Modus:</strong> <span id="ki-status">Hybrid (manuell)</span>
+    </div>
 
-  <div class="status-section">
-    <h2>Status & Verbindungen</h2>
-    <button id="traderStatusBtn" class="status-btn paused" onclick="toggleTraderStatus()">Trader: Pausiert</button>
-    <button id="avaStatusBtn" class="status-btn neutral" onclick="toggleConnection('ava')">AvaTrade: Nicht verbunden</button>
-    <button id="nagaStatusBtn" class="status-btn neutral" onclick="toggleConnection('naga')">NAGA: Nicht verbunden</button>
-  </div>
+    <div class="button-group">
+      <button id="toggle-ki" class="active">KI auf Vollautomatik umstellen</button>
+      <button id="connect-ava" class="active">AvaTrade verbunden</button>
+      <button id="connect-naga" class="active">NAGA verbunden</button>
+    </div>
 
-  <div class="report-section">
-    <h2>Tagesreport</h2>
-    <a href="daily_report.pdf" download>📄 PDF-Report herunterladen</a>
-  </div>
+    <div class="filter-group">
+      <label for="filter-platform">Plattform:</label>
+      <select id="filter-platform">
+        <option value="all">Alle</option>
+        <option value="AvaTrade">AvaTrade</option>
+        <option value="NAGA">NAGA</option>
+      </select>
 
-  <div class="filter-section">
-    <h2>Trade-Filter</h2>
-    <input type="text" id="traderFilter" class="filter-input" placeholder="Tradername" oninput="renderTrades()" />
-    <select id="platformFilter" class="filter-input" onchange="renderTrades()">
-      <option value="">Alle Plattformen</option>
-      <option value="ava">AvaTrade</option>
-      <option value="naga">NAGA</option>
-    </select>
-  </div>
+      <label for="filter-trader">Trader:</label>
+      <select id="filter-trader">
+        <option value="all">Alle</option>
+        <option value="Trader01">Trader01</option>
+        <option value="Trader02">Trader02</option>
+      </select>
+    </div>
 
-  <div class="trades-section">
-    <h2>Offene Trades</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Trader</th>
-          <th>Plattform</th>
-          <th>Symbol</th>
-          <th>Lot</th>
-          <th>Richtung</th>
-          <th>SL</th>
-          <th>TP</th>
-        </tr>
-      </thead>
-      <tbody id="tradesTable">
-        <!-- Dynamisch gefüllt -->
-      </tbody>
-    </table>
-  </div>
+    <div class="section">
+      <h2>Offene Positionen</h2>
+      <table class="trade-table" id="trades-table">
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Plattform</th>
+            <th>Richtung</th>
+            <th>Lots</th>
+            <th>SL/TP</th>
+            <th>Trader</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Dynamisch gefüllt -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Tagesreport (PDF)</h2>
+      <div id="pdf-container">PDF wird geladen…</div>
+      <a id="download-link" href="#" download="Tagesreport.pdf">📥 PDF herunterladen</a>
+    </div>
+  </main>
 
   <script>
-    let traderActive = false;
-    let avaConnected = false;
-    let nagaConnected = false;
+    let kiModus = 'Hybrid';
 
-    const mockTrades = [
-      { trader: 'AlphaBot', platform: 'ava', symbol: 'EURUSD', lot: 0.2, dir: 'Buy', sl: 1.0840, tp: 1.0950 },
-      { trader: 'BetaAI', platform: 'naga', symbol: 'DAX', lot: 0.5, dir: 'Sell', sl: 16300, tp: 15700 },
-      { trader: 'AlphaBot', platform: 'ava', symbol: 'BTCUSD', lot: 0.1, dir: 'Buy', sl: 58000, tp: 62000 },
-      { trader: 'GammaTrader', platform: 'naga', symbol: 'Gold', lot: 1, dir: 'Sell', sl: 2370, tp: 2280 }
+    document.getElementById("toggle-ki").onclick = function () {
+      kiModus = kiModus === 'Hybrid' ? 'Vollautomatik' : 'Hybrid';
+      document.getElementById("ki-status").textContent = kiModus + (kiModus === 'Hybrid' ? " (manuell)" : " (KI-gesteuert)");
+      this.textContent = kiModus === 'Hybrid' ? 'KI auf Vollautomatik umstellen' : 'KI auf Hybrid umstellen';
+    };
+
+    const trades = [
+      { symbol: 'EUR/USD', platform: 'AvaTrade', direction: 'Buy', lots: 0.1, sltp: '1.0932/1.0998', trader: 'Trader01' },
+      { symbol: 'BTC/USD', platform: 'NAGA', direction: 'Sell', lots: 0.2, sltp: '35500/31200', trader: 'Trader02' },
+      { symbol: 'DAX', platform: 'AvaTrade', direction: 'Buy', lots: 1.0, sltp: '18100/18900', trader: 'Trader01' },
     ];
 
-    function toggleTraderStatus() {
-      traderActive = !traderActive;
-      const btn = document.getElementById('traderStatusBtn');
-      btn.textContent = `Trader: ${traderActive ? 'Aktiv' : 'Pausiert'}`;
-      btn.className = `status-btn ${traderActive ? 'active' : 'paused'}`;
-    }
-
-    function toggleConnection(type) {
-      if (type === 'ava') {
-        avaConnected = !avaConnected;
-        const btn = document.getElementById('avaStatusBtn');
-        btn.textContent = `AvaTrade: ${avaConnected ? 'Verbunden' : 'Nicht verbunden'}`;
-        btn.className = `status-btn ${avaConnected ? 'active' : 'neutral'}`;
-      } else if (type === 'naga') {
-        nagaConnected = !nagaConnected;
-        const btn = document.getElementById('nagaStatusBtn');
-        btn.textContent = `NAGA: ${nagaConnected ? 'Verbunden' : 'Nicht verbunden'}`;
-        btn.className = `status-btn ${nagaConnected ? 'active' : 'neutral'}`;
-      }
-      renderTrades();
-    }
-
     function renderTrades() {
-      const table = document.getElementById('tradesTable');
-      const traderFilter = document.getElementById('traderFilter').value.toLowerCase();
-      const platformFilter = document.getElementById('platformFilter').value;
+      const platformFilter = document.getElementById("filter-platform").value;
+      const traderFilter = document.getElementById("filter-trader").value;
+      const tbody = document.getElementById("trades-table").querySelector("tbody");
+      tbody.innerHTML = "";
 
-      table.innerHTML = '';
-      mockTrades.forEach(trade => {
-        const matchTrader = !traderFilter || trade.trader.toLowerCase().includes(traderFilter);
-        const matchPlatform = !platformFilter || trade.platform === platformFilter;
-        const platformConnected = (trade.platform === 'ava' && avaConnected) || (trade.platform === 'naga' && nagaConnected);
-
-        if (matchTrader && matchPlatform && platformConnected) {
-          const row = `
-            <tr>
-              <td>${trade.trader}</td>
-              <td>${trade.platform.toUpperCase()}</td>
-              <td>${trade.symbol}</td>
-              <td>${trade.lot}</td>
-              <td>${trade.dir}</td>
-              <td>${trade.sl}</td>
-              <td>${trade.tp}</td>
-            </tr>
-          `;
-          table.innerHTML += row;
-        }
-      });
+      trades
+        .filter(t => (platformFilter === "all" || t.platform === platformFilter) &&
+                     (traderFilter === "all" || t.trader === traderFilter))
+        .forEach(t => {
+          const row = `<tr>
+            <td>${t.symbol}</td>
+            <td>${t.platform}</td>
+            <td>${t.direction}</td>
+            <td>${t.lots}</td>
+            <td>${t.sltp}</td>
+            <td>${t.trader}</td>
+          </tr>`;
+          tbody.innerHTML += row;
+        });
     }
 
-    // Initial rendering (leer, bis Verbindung aktiv)
+    document.getElementById("filter-platform").onchange = renderTrades;
+    document.getElementById("filter-trader").onchange = renderTrades;
+
     renderTrades();
+
+    // PDF Mock-Inhalt
+    const pdfHtml = `
+      <h3>📊 Tagesreport – 26.07.2025</h3>
+      <ul>
+        <li>3 geprüfte Setups</li>
+        <li>2 ausgeführte Trades</li>
+        <li>Gesamt-P/L: +94 €</li>
+        <li>Gewinnquote: 66%</li>
+        <li>Letzter Trade: EUR/USD Buy, +37 €</li>
+      </ul>
+    `;
+
+    document.getElementById("pdf-container").innerHTML = pdfHtml;
+
+    // Download-Link vorbereiten
+    const blob = new Blob([pdfHtml], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    document.getElementById("download-link").href = url;
   </script>
 </body>
 </html>
