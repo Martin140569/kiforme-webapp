@@ -2,134 +2,121 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>KIforME Dashboard</title>
   <style>
     body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #121212;
-      color: #f0f0f0;
-      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #fff;
       padding: 20px;
-      text-align: center;
     }
-
     h1 {
-      color: #00d8ff;
-      font-size: 28px;
+      color: #00ffc3;
     }
-
-    h2 {
-      color: #ffffff;
-      margin-top: 40px;
-      font-size: 20px;
-    }
-
     .section {
-      margin-top: 30px;
+      margin: 30px 0;
+      padding: 20px;
+      background-color: #1e1e1e;
+      border-radius: 10px;
     }
-
-    .status-btn {
-      padding: 14px 24px;
-      margin: 12px;
+    .button {
+      padding: 12px 20px;
+      margin: 10px 5px;
+      font-size: 16px;
       border: none;
       border-radius: 6px;
-      font-weight: bold;
-      font-size: 18px;
       cursor: pointer;
-      transition: all 0.2s ease-in-out;
-      width: 260px;
-      max-width: 90vw;
     }
-
-    .status-btn.paused {
-      background-color: #c0392b;
-      color: white;
+    .active {
+      background-color: #00ffc3;
+      color: #000;
     }
-
-    .status-btn.running {
-      background-color: #27ae60;
-      color: white;
+    .inactive {
+      background-color: #555;
+      color: #fff;
     }
-
-    .status-btn.manual {
-      background-color: #2980b9;
-      color: white;
-    }
-
-    .status-btn.auto {
-      background-color: #f39c12;
-      color: black;
-    }
-
-    .info-box {
-      margin: 20px auto;
-      padding: 14px 20px;
-      background-color: #1f1f1f;
-      border-radius: 6px;
-      max-width: 600px;
-      font-size: 16px;
-    }
-
-    footer {
-      margin-top: 50px;
-      font-size: 13px;
-      color: #888;
-    }
-
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 24px;
-      }
-      .status-btn {
-        font-size: 16px;
-        width: 90%;
-      }
+    .status-label {
+      margin-left: 10px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
-  <h1>🤖 KIforME Dashboard</h1>
+  <h1>KIforME Copytrading Dashboard</h1>
 
-  <div class="info-box">
-    Willkommen im privaten Steuerungszentrum deines KI-Copytrading-Bots.<br>
-    Hier kannst du den Modus wechseln und den Bot pausieren oder aktivieren.
+  <div class="section">
+    <h2>Trader Steuerung</h2>
+    <button class="button inactive" id="toggleTraderBtn" onclick="toggleTrader()">Trader: <span id="traderStatus">pausiert</span></button>
   </div>
 
   <div class="section">
-    <h2>Statussteuerung</h2>
-    <button id="traderBtn" class="status-btn paused" onclick="toggleTrader()">Trader: Pausiert</button>
-    <button id="modusBtn" class="status-btn manual" onclick="toggleModus()">Modus: Manuell</button>
+    <h2>Verbindung zu AVA und NAGA</h2>
+    <button class="button inactive" id="avaBtn" onclick="toggleConnection('ava')">AvaTrade: <span id="avaStatus">getrennt</span></button>
+    <button class="button inactive" id="nagaBtn" onclick="toggleConnection('naga')">NAGA: <span id="nagaStatus">getrennt</span></button>
   </div>
 
   <div class="section">
-    <h2>Demnächst verfügbar</h2>
-    <div class="info-box">
-      📊 Trade-Auswertung • 📅 Tagesreport • 📈 Setup-Check • 📥 Telegram-Steuerung
-    </div>
+    <h2>Tagesreporting</h2>
+    <button class="button active" onclick="generatePDF()">📄 PDF-Report erzeugen</button>
   </div>
 
-  <footer>
-    KIforME Dashboard v1.2 © 2025 · entwickelt für Martin140569
-  </footer>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    let traderAktiv = false;
-    let modusAuto = false;
+    let traderActive = false;
+    let connections = {
+      ava: false,
+      naga: false
+    };
 
     function toggleTrader() {
-      traderAktiv = !traderAktiv;
-      const btn = document.getElementById("traderBtn");
-      btn.className = "status-btn " + (traderAktiv ? "running" : "paused");
-      btn.innerText = "Trader: " + (traderAktiv ? "Aktiv" : "Pausiert");
+      traderActive = !traderActive;
+      const btn = document.getElementById('toggleTraderBtn');
+      const status = document.getElementById('traderStatus');
+      if (traderActive) {
+        btn.classList.remove('inactive');
+        btn.classList.add('active');
+        status.textContent = 'aktiv';
+      } else {
+        btn.classList.remove('active');
+        btn.classList.add('inactive');
+        status.textContent = 'pausiert';
+      }
     }
 
-    function toggleModus() {
-      modusAuto = !modusAuto;
-      const btn = document.getElementById("modusBtn");
-      btn.className = "status-btn " + (modusAuto ? "auto" : "manual");
-      btn.innerText = "Modus: " + (modusAuto ? "Automatik" : "Manuell");
+    function toggleConnection(broker) {
+      connections[broker] = !connections[broker];
+      const btn = document.getElementById(broker + 'Btn');
+      const status = document.getElementById(broker + 'Status');
+      if (connections[broker]) {
+        btn.classList.remove('inactive');
+        btn.classList.add('active');
+        status.textContent = 'verbunden';
+      } else {
+        btn.classList.remove('active');
+        btn.classList.add('inactive');
+        status.textContent = 'getrennt';
+      }
+    }
+
+    async function generatePDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const now = new Date();
+
+      doc.setFontSize(16);
+      doc.text("KIforME Tagesreport", 20, 20);
+      doc.setFontSize(12);
+      doc.text(`Datum: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`, 20, 30);
+
+      doc.text(`Trader Status: ${traderActive ? 'Aktiv' : 'Pausiert'}`, 20, 50);
+      doc.text(`AvaTrade Verbindung: ${connections.ava ? 'Aktiv' : 'Getrennt'}`, 20, 60);
+      doc.text(`NAGA Verbindung: ${connections.naga ? 'Aktiv' : 'Getrennt'}`, 20, 70);
+
+      doc.text("... Weitere Daten aus Backend folgt ...", 20, 90);
+
+      doc.save("tagesreport.pdf");
     }
   </script>
 
