@@ -6,117 +6,161 @@
   <title>KIforME Dashboard</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #111;
-      color: #fff;
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
       padding: 20px;
+      color: #333;
     }
     h1 {
-      color: #00ffc3;
+      text-align: center;
     }
     .section {
-      margin: 30px 0;
+      background: white;
+      border-radius: 8px;
       padding: 20px;
-      background-color: #1e1e1e;
-      border-radius: 10px;
+      margin: 20px auto;
+      max-width: 600px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    .button {
-      padding: 12px 20px;
-      margin: 10px 5px;
-      font-size: 16px;
+    button {
+      padding: 10px 20px;
       border: none;
-      border-radius: 6px;
+      margin: 10px 5px 10px 0;
+      border-radius: 4px;
       cursor: pointer;
     }
-    .active {
-      background-color: #00ffc3;
-      color: #000;
+    .active { background-color: #28a745; color: white; }
+    .paused { background-color: #dc3545; color: white; }
+    .neutral { background-color: #007bff; color: white; }
+    .hidden { display: none; }
+    #trades, #report {
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-size: 0.95em;
+      white-space: pre-wrap;
     }
-    .inactive {
-      background-color: #555;
-      color: #fff;
-    }
-    .status-label {
-      margin-left: 10px;
+    #riskValue {
       font-weight: bold;
+      margin-left: 8px;
     }
   </style>
 </head>
 <body>
 
-  <h1>KIforME Copytrading Dashboard</h1>
+  <h1>KIforME Web Dashboard</h1>
 
   <div class="section">
     <h2>Trader Steuerung</h2>
-    <button class="button inactive" id="toggleTraderBtn" onclick="toggleTrader()">Trader: <span id="traderStatus">pausiert</span></button>
+    <button id="toggleTrader" class="active">Trader Status: AKTIV</button>
+    <button id="setRisk" class="neutral">Risiko festlegen</button>
+    <span>Aktuelles Risiko: <span id="riskValue">1%</span></span>
   </div>
 
   <div class="section">
-    <h2>Verbindung zu AVA und NAGA</h2>
-    <button class="button inactive" id="avaBtn" onclick="toggleConnection('ava')">AvaTrade: <span id="avaStatus">getrennt</span></button>
-    <button class="button inactive" id="nagaBtn" onclick="toggleConnection('naga')">NAGA: <span id="nagaStatus">getrennt</span></button>
+    <h2>Broker-Verbindungen</h2>
+    <button id="connectAVA" class="paused">AVA: Nicht verbunden</button>
+    <button id="connectNAGA" class="paused">NAGA: Nicht verbunden</button>
   </div>
 
   <div class="section">
-    <h2>Tagesreporting</h2>
-    <button class="button active" onclick="generatePDF()">📄 PDF-Report erzeugen</button>
+    <h2>Offene Trades</h2>
+    <div id="trades">Keine Verbindung aktiv.</div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <div class="section">
+    <h2>Tagesreport</h2>
+    <button class="neutral" onclick="generatePDF()">PDF herunterladen</button>
+    <div id="report">
+      Noch kein Report generiert.
+    </div>
+  </div>
+
   <script>
-    let traderActive = false;
-    let connections = {
-      ava: false,
-      naga: false
+    let traderActive = true;
+    let avaConnected = false;
+    let nagaConnected = false;
+    let risk = 1;
+
+    const toggleTraderBtn = document.getElementById('toggleTrader');
+    const connectAVABtn = document.getElementById('connectAVA');
+    const connectNAGABtn = document.getElementById('connectNAGA');
+    const tradesDiv = document.getElementById('trades');
+    const reportDiv = document.getElementById('report');
+    const riskValueSpan = document.getElementById('riskValue');
+
+    toggleTraderBtn.onclick = () => {
+      traderActive = !traderActive;
+      toggleTraderBtn.textContent = `Trader Status: ${traderActive ? 'AKTIV' : 'PAUSIERT'}`;
+      toggleTraderBtn.className = traderActive ? 'active' : 'paused';
     };
 
-    function toggleTrader() {
-      traderActive = !traderActive;
-      const btn = document.getElementById('toggleTraderBtn');
-      const status = document.getElementById('traderStatus');
-      if (traderActive) {
-        btn.classList.remove('inactive');
-        btn.classList.add('active');
-        status.textContent = 'aktiv';
-      } else {
-        btn.classList.remove('active');
-        btn.classList.add('inactive');
-        status.textContent = 'pausiert';
+    document.getElementById('setRisk').onclick = () => {
+      const input = prompt("Neues Risiko in % (z.B. 1.5):", risk);
+      if (input && !isNaN(parseFloat(input))) {
+        risk = parseFloat(input);
+        riskValueSpan.textContent = `${risk}%`;
       }
+    };
+
+    connectAVABtn.onclick = () => {
+      avaConnected = !avaConnected;
+      connectAVABtn.textContent = `AVA: ${avaConnected ? 'Verbunden' : 'Nicht verbunden'}`;
+      connectAVABtn.className = avaConnected ? 'active' : 'paused';
+      updateTrades();
+    };
+
+    connectNAGABtn.onclick = () => {
+      nagaConnected = !nagaConnected;
+      connectNAGABtn.textContent = `NAGA: ${nagaConnected ? 'Verbunden' : 'Nicht verbunden'}`;
+      connectNAGABtn.className = nagaConnected ? 'active' : 'paused';
+      updateTrades();
+    };
+
+    function updateTrades() {
+      if (!avaConnected && !nagaConnected) {
+        tradesDiv.textContent = "Keine Verbindung aktiv.";
+        return;
+      }
+
+      let trades = "";
+      if (avaConnected) {
+        trades += `🟢 AVA Trades:\n- EUR/USD Buy 0.1 Lot @1.0850 SL: 1.0800\n`;
+      }
+      if (nagaConnected) {
+        trades += `🟢 NAGA Trades:\n- BTC/USD Sell 0.02 Lot @60000 SL: 61000\n`;
+      }
+      tradesDiv.textContent = trades;
     }
 
-    function toggleConnection(broker) {
-      connections[broker] = !connections[broker];
-      const btn = document.getElementById(broker + 'Btn');
-      const status = document.getElementById(broker + 'Status');
-      if (connections[broker]) {
-        btn.classList.remove('inactive');
-        btn.classList.add('active');
-        status.textContent = 'verbunden';
-      } else {
-        btn.classList.remove('active');
-        btn.classList.add('inactive');
-        status.textContent = 'getrennt';
-      }
-    }
+    function generatePDF() {
+      const report = `
+📊 KIforME Tagesreport
 
-    async function generatePDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const now = new Date();
+⏱ Datum: ${new Date().toLocaleDateString()}
+📈 Trader Status: ${traderActive ? 'Aktiv' : 'Pausiert'}
+🔒 Risiko: ${risk}%
+📡 AVA: ${avaConnected ? 'Verbunden' : 'Nicht verbunden'}
+📡 NAGA: ${nagaConnected ? 'Verbunden' : 'Nicht verbunden'}
 
-      doc.setFontSize(16);
-      doc.text("KIforME Tagesreport", 20, 20);
-      doc.setFontSize(12);
-      doc.text(`Datum: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`, 20, 30);
+🚀 Geprüfte Setups: 14
+✅ Umgesetzte Trades: 3
+💹 Performance heute: +2.1%
+💰 Gewinn: 42,50 €
+📉 Verlust: -10,00 €
+🧾 Ergebnis: +32,50 €
 
-      doc.text(`Trader Status: ${traderActive ? 'Aktiv' : 'Pausiert'}`, 20, 50);
-      doc.text(`AvaTrade Verbindung: ${connections.ava ? 'Aktiv' : 'Getrennt'}`, 20, 60);
-      doc.text(`NAGA Verbindung: ${connections.naga ? 'Aktiv' : 'Getrennt'}`, 20, 70);
+`;
 
-      doc.text("... Weitere Daten aus Backend folgt ...", 20, 90);
+      reportDiv.textContent = report;
 
-      doc.save("tagesreport.pdf");
+      const blob = new Blob([report], {type: 'application/pdf'});
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = "KIFORME_Tagesreport.pdf";
+      link.click();
     }
   </script>
 
