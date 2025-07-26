@@ -1,137 +1,185 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>KI Copytrading Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KIforME Dashboard</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #111; color: #eee; padding: 20px; }
-    h1 { text-align: center; color: #00d9ff; }
-    .section { margin-bottom: 30px; padding: 20px; background: #222; border-radius: 8px; }
-    .button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; border: none; border-radius: 5px; }
-    .toggle { background-color: #00aaff; color: white; }
-    .status { font-weight: bold; padding: 5px 10px; border-radius: 5px; display: inline-block; margin-left: 10px; }
-    .active { background-color: #28a745; }
-    .paused { background-color: #dc3545; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { padding: 10px; text-align: center; border: 1px solid #444; }
-    th { background-color: #333; }
-    .ava { background-color: #1c2c3c; }
-    .naga { background-color: #2e1c3c; }
-    .report-area { background: #181818; padding: 15px; border-radius: 6px; white-space: pre-wrap; font-family: monospace; margin-top: 10px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .status-section, .report-section, .filter-section, .trades-section {
+      margin: 20px auto;
+      max-width: 800px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .status-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .active {
+      background: #4caf50;
+      color: #fff;
+    }
+    .paused {
+      background: #f44336;
+      color: #fff;
+    }
+    .neutral {
+      background: #607d8b;
+      color: #fff;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background: #e0e0e0;
+    }
+    .filter-input {
+      margin-right: 10px;
+      padding: 6px;
+    }
+    @media (max-width: 600px) {
+      table, th, td {
+        font-size: 12px;
+      }
+      .status-btn {
+        width: 100%;
+        margin: 5px 0;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>Martin’s KI Copytrading Dashboard</h1>
+  <h1>KIforME Dashboard</h1>
 
-  <div class="section">
-    <h2>Status</h2>
-    <button class="button toggle" onclick="toggleTrader()">Trader umschalten</button>
-    <span id="traderStatus" class="status active">Aktiv</span>
+  <div class="status-section">
+    <h2>Status & Verbindungen</h2>
+    <button id="traderStatusBtn" class="status-btn paused" onclick="toggleTraderStatus()">Trader: Pausiert</button>
+    <button id="avaStatusBtn" class="status-btn neutral" onclick="toggleConnection('ava')">AvaTrade: Nicht verbunden</button>
+    <button id="nagaStatusBtn" class="status-btn neutral" onclick="toggleConnection('naga')">NAGA: Nicht verbunden</button>
   </div>
 
-  <div class="section">
-    <h2>Verbindungen</h2>
-    <button class="button toggle" onclick="connectAVA()">AVA verbinden</button>
-    <button class="button toggle" onclick="connectNAGA()">NAGA verbinden</button>
+  <div class="report-section">
+    <h2>Tagesreport</h2>
+    <a href="daily_report.pdf" download>📄 PDF-Report herunterladen</a>
   </div>
 
-  <div class="section">
-    <h2>Risikosteuerung</h2>
-    <button class="button toggle" onclick="setRisk()">Risiko setzen</button>
+  <div class="filter-section">
+    <h2>Trade-Filter</h2>
+    <input type="text" id="traderFilter" class="filter-input" placeholder="Tradername" oninput="renderTrades()" />
+    <select id="platformFilter" class="filter-input" onchange="renderTrades()">
+      <option value="">Alle Plattformen</option>
+      <option value="ava">AvaTrade</option>
+      <option value="naga">NAGA</option>
+    </select>
   </div>
 
-  <div class="section">
-    <h2>Offene Positionen</h2>
+  <div class="trades-section">
+    <h2>Offene Trades</h2>
     <table>
       <thead>
         <tr>
+          <th>Trader</th>
           <th>Plattform</th>
           <th>Symbol</th>
+          <th>Lot</th>
           <th>Richtung</th>
-          <th>Lotgröße</th>
           <th>SL</th>
           <th>TP</th>
-          <th>Trader</th>
         </tr>
       </thead>
-      <tbody id="tradeList">
-        <!-- Dynamisch geladen -->
+      <tbody id="tradesTable">
+        <!-- Dynamisch gefüllt -->
       </tbody>
     </table>
   </div>
 
-  <div class="section">
-    <h2>Tagesreport</h2>
-    <div class="report-area" id="pdfReport">
-      Noch kein Report geladen...
-    </div>
-    <button class="button toggle" onclick="loadPDF()">PDF Report laden</button>
-  </div>
-
   <script>
-    let traderPaused = false;
+    let traderActive = false;
+    let avaConnected = false;
+    let nagaConnected = false;
 
-    function toggleTrader() {
-      traderPaused = !traderPaused;
-      const status = document.getElementById('traderStatus');
-      status.className = 'status ' + (traderPaused ? 'paused' : 'active');
-      status.textContent = traderPaused ? 'Pausiert' : 'Aktiv';
+    const mockTrades = [
+      { trader: 'AlphaBot', platform: 'ava', symbol: 'EURUSD', lot: 0.2, dir: 'Buy', sl: 1.0840, tp: 1.0950 },
+      { trader: 'BetaAI', platform: 'naga', symbol: 'DAX', lot: 0.5, dir: 'Sell', sl: 16300, tp: 15700 },
+      { trader: 'AlphaBot', platform: 'ava', symbol: 'BTCUSD', lot: 0.1, dir: 'Buy', sl: 58000, tp: 62000 },
+      { trader: 'GammaTrader', platform: 'naga', symbol: 'Gold', lot: 1, dir: 'Sell', sl: 2370, tp: 2280 }
+    ];
+
+    function toggleTraderStatus() {
+      traderActive = !traderActive;
+      const btn = document.getElementById('traderStatusBtn');
+      btn.textContent = `Trader: ${traderActive ? 'Aktiv' : 'Pausiert'}`;
+      btn.className = `status-btn ${traderActive ? 'active' : 'paused'}`;
     }
 
-    function connectAVA() {
-      alert("AVA API verbunden!");
-    }
-
-    function connectNAGA() {
-      alert("NAGA API verbunden!");
-    }
-
-    function setRisk() {
-      const risk = prompt("Gib das Risiko in % ein (z. B. 1.5 für 1,5%):", "1.0");
-      if (risk) {
-        alert("Risiko gesetzt auf " + risk + "%");
+    function toggleConnection(type) {
+      if (type === 'ava') {
+        avaConnected = !avaConnected;
+        const btn = document.getElementById('avaStatusBtn');
+        btn.textContent = `AvaTrade: ${avaConnected ? 'Verbunden' : 'Nicht verbunden'}`;
+        btn.className = `status-btn ${avaConnected ? 'active' : 'neutral'}`;
+      } else if (type === 'naga') {
+        nagaConnected = !nagaConnected;
+        const btn = document.getElementById('nagaStatusBtn');
+        btn.textContent = `NAGA: ${nagaConnected ? 'Verbunden' : 'Nicht verbunden'}`;
+        btn.className = `status-btn ${nagaConnected ? 'active' : 'neutral'}`;
       }
+      renderTrades();
     }
 
-    function loadPDF() {
-      const dummyReport = `
-Datum: 26.07.2025
-Trades heute:
-- EUR/USD (Buy), Lot: 0.2, Gewinn: +14,80 €
-- DAX (Sell), Lot: 0.1, Verlust: -5,60 €
-Gesamtergebnis: +9,20 €
-Risiko heute: 1,0%
-      `;
-      document.getElementById("pdfReport").textContent = dummyReport;
-    }
+    function renderTrades() {
+      const table = document.getElementById('tradesTable');
+      const traderFilter = document.getElementById('traderFilter').value.toLowerCase();
+      const platformFilter = document.getElementById('platformFilter').value;
 
-    function loadTrades() {
-      const trades = [
-        { platform: "AVA", symbol: "EUR/USD", direction: "Buy", lot: "0.2", sl: "1.0860", tp: "1.0940", trader: "TopTrader01" },
-        { platform: "AVA", symbol: "Gold", direction: "Sell", lot: "0.1", sl: "2380", tp: "2350", trader: "XAUPro" },
-        { platform: "NAGA", symbol: "DAX", direction: "Buy", lot: "0.3", sl: "18500", tp: "18850", trader: "IndexKing" },
-        { platform: "NAGA", symbol: "Apple", direction: "Sell", lot: "0.5", sl: "214", tp: "205", trader: "US-Tech-Guru" }
-      ];
-      const tbody = document.getElementById("tradeList");
-      tbody.innerHTML = "";
-      trades.forEach(trade => {
-        const tr = document.createElement("tr");
-        tr.className = trade.platform.toLowerCase();
-        tr.innerHTML = `
-          <td>${trade.platform}</td>
-          <td>${trade.symbol}</td>
-          <td>${trade.direction}</td>
-          <td>${trade.lot}</td>
-          <td>${trade.sl}</td>
-          <td>${trade.tp}</td>
-          <td>${trade.trader}</td>
-        `;
-        tbody.appendChild(tr);
+      table.innerHTML = '';
+      mockTrades.forEach(trade => {
+        const matchTrader = !traderFilter || trade.trader.toLowerCase().includes(traderFilter);
+        const matchPlatform = !platformFilter || trade.platform === platformFilter;
+        const platformConnected = (trade.platform === 'ava' && avaConnected) || (trade.platform === 'naga' && nagaConnected);
+
+        if (matchTrader && matchPlatform && platformConnected) {
+          const row = `
+            <tr>
+              <td>${trade.trader}</td>
+              <td>${trade.platform.toUpperCase()}</td>
+              <td>${trade.symbol}</td>
+              <td>${trade.lot}</td>
+              <td>${trade.dir}</td>
+              <td>${trade.sl}</td>
+              <td>${trade.tp}</td>
+            </tr>
+          `;
+          table.innerHTML += row;
+        }
       });
     }
 
-    // Initialer Aufruf
-    loadTrades();
+    // Initial rendering (leer, bis Verbindung aktiv)
+    renderTrades();
   </script>
 </body>
 </html>
