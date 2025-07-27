@@ -2,126 +2,74 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AvaTrade KI Dashboard (Debug)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AvaTrade Dashboard – Debug</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background: #f9f9f9;
       padding: 20px;
-      background: #f0f4f8;
-      color: #222;
     }
     .status {
-      margin: 10px 0;
       padding: 10px;
-      border-radius: 8px;
-      font-weight: bold;
+      margin-bottom: 15px;
+      border-radius: 5px;
     }
-    .green { background: #d4edda; color: #155724; }
-    .yellow { background: #fff3cd; color: #856404; }
-    .red { background: #f8d7da; color: #721c24; }
-    .position {
-      background: white;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-left: 5px solid #007bff;
-      border-radius: 4px;
+    .status.ok {
+      background-color: #e0ffe0;
+      border: 1px solid #00a000;
     }
-    .position .label { font-weight: bold; }
+    .status.error {
+      background-color: #ffe0e0;
+      border: 1px solid #a00000;
+    }
+    .loading {
+      color: gray;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
-  <h1>📊 AvaTrade KI-Dashboard – Debug-Modus</h1>
-  <div id="accountStatus">Kontostand wird geladen…</div>
-  <div id="marginStatus">Margin-Level wird geladen…</div>
-  <h2>Offene Positionen</h2>
-  <div id="positions"></div>
+  <h1>AvaTrade KI Dashboard (Debug)</h1>
 
-  <script type="module">
-    const metaApiToken = "HIER_DEIN_METAAPI_TOKEN";
-    const accountId = "HIER_DEINE_ACCOUNT_ID";
+  <div id="status" class="status loading">⏳ Verbindung zu MetaApi wird getestet…</div>
 
-    const baseUrl = "https://mt-client-api-v1.new-york.agiliumtrade.ai";
-    const headers = {
-      'auth-token': metaApiToken,
-      'Content-Type': 'application/json'
-    };
+  <pre id="debugOutput" style="white-space: pre-wrap; background:#eee; padding:10px; border-radius:4px;"></pre>
 
-    async function fetchAccountInfo() {
-      console.log("🔧 Starte Datenabruf…");
-      console.log("✅ MetaApi Token:", metaApiToken);
-      console.log("✅ Account-ID:", accountId);
+  <script>
+    const token = "DEIN_METAAPI_TOKEN_HIER";  // <<< ERSETZEN ohne Anführungszeichen
+    const accountId = "DEINE_ACCOUNT_ID_HIER"; // <<< ERSETZEN
 
+    const statusDiv = document.getElementById('status');
+    const debugOutput = document.getElementById('debugOutput');
+
+    async function checkMetaApi() {
       try {
-        const accountResp = await fetch(`${baseUrl}/users/current/accounts/${accountId}`, { headers });
-        if (!accountResp.ok) throw new Error("Account nicht gefunden oder Token falsch");
-        const account = await accountResp.json();
+        const res = await fetch(`https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/${accountId}`, {
+          method: 'GET',
+          headers: {
+            'auth-token': token
+          }
+        });
 
-        const connectionStatus = account.connectionStatus;
-        console.log("📡 Verbindung:", connectionStatus);
+        const result = await res.json();
 
-        if (connectionStatus !== "CONNECTED") {
-          document.getElementById("accountStatus").innerText = "⛔ Verbindung getrennt.";
-          return;
-        }
-
-        const metricsResp = await fetch(`${baseUrl}/users/current/accounts/${accountId}/metrics`, { headers });
-        const metrics = await metricsResp.json();
-
-        const balance = metrics.balance.toFixed(2);
-        const equity = metrics.equity.toFixed(2);
-        const marginLevel = parseFloat(metrics.marginLevel).toFixed(1);
-
-        // Margin-Farben setzen
-        const marginDiv = document.getElementById("marginStatus");
-        if (marginLevel > 150) {
-          marginDiv.className = "status green";
-        } else if (marginLevel > 50) {
-          marginDiv.className = "status yellow";
+        if (!res.ok) {
+          statusDiv.className = 'status error';
+          statusDiv.textContent = `❌ Fehler: ${result.message || 'Unbekannter Fehler'}`;
         } else {
-          marginDiv.className = "status red";
+          statusDiv.className = 'status ok';
+          statusDiv.textContent = `✅ Verbindung erfolgreich – Kontoname: ${result.name || 'unbekannt'}`;
+          debugOutput.textContent = JSON.stringify(result, null, 2);
         }
-
-        document.getElementById("accountStatus").innerText = `💰 Kontostand: ${balance} USD | Eigenkapital: ${equity} USD`;
-        document.getElementById("marginStatus").innerText = `📉 Margin-Level: ${marginLevel}%`;
-
-        console.log("✅ Balance:", balance);
-        console.log("✅ Margin-Level:", marginLevel);
-
-        // Positionen laden
-        const positionsResp = await fetch(`${baseUrl}/users/current/accounts/${accountId}/open-positions`, { headers });
-        const positions = await positionsResp.json();
-        console.log("📈 Gefundene Positionen:", positions.length);
-
-        const positionsDiv = document.getElementById("positions");
-        positionsDiv.innerHTML = "";
-
-        if (positions.length === 0) {
-          positionsDiv.innerHTML = "<i>Keine offenen Positionen.</i>";
-        } else {
-          positions.forEach(pos => {
-            const div = document.createElement("div");
-            div.className = "position";
-            div.innerHTML = `
-              <div><span class="label">Symbol:</span> ${pos.symbol}</div>
-              <div><span class="label">Typ:</span> ${pos.type}</div>
-              <div><span class="label">Lots:</span> ${pos.volume}</div>
-              <div><span class="label">SL:</span> ${pos.stopLoss ?? "-"}</div>
-              <div><span class="label">TP:</span> ${pos.takeProfit ?? "-"}</div>
-              <div><span class="label">Profit:</span> ${pos.unrealizedProfit.toFixed(2)} USD</div>
-            `;
-            positionsDiv.appendChild(div);
-          });
-        }
-
       } catch (err) {
-        console.error("❌ Fehler beim Laden:", err);
-        document.getElementById("accountStatus").innerText = "⚠️ Fehler beim Laden der Daten.";
-        document.getElementById("marginStatus").innerText = err.message;
+        statusDiv.className = 'status error';
+        statusDiv.textContent = `❌ Verbindungsfehler: ${err.message}`;
+        debugOutput.textContent = err.stack;
       }
     }
 
-    fetchAccountInfo();
+    checkMetaApi();
   </script>
 </body>
 </html>
