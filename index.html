@@ -1,75 +1,92 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AvaTrade Dashboard – Debug</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AvaDashboard Debug</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      padding: 20px;
+    body { font-family: sans-serif; padding: 20px; background: #f0f2f5; }
+    .status { font-weight: bold; margin-bottom: 10px; padding: 10px; border-radius: 5px; }
+    .connected { background: #d4edda; color: #155724; }
+    .disconnected { background: #f8d7da; color: #721c24; }
+    .unknown { background: #fff3cd; color: #856404; }
+    .button { padding: 10px 15px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+    .button:disabled { background: grey; }
+    #toast {
+      visibility: hidden; min-width: 250px; margin-left: -125px;
+      background-color: #333; color: #fff; text-align: center;
+      border-radius: 5px; padding: 16px; position: fixed;
+      z-index: 1; left: 50%; bottom: 30px; font-size: 16px;
     }
-    .status {
-      padding: 10px;
-      margin-bottom: 15px;
-      border-radius: 5px;
-    }
-    .status.ok {
-      background-color: #e0ffe0;
-      border: 1px solid #00a000;
-    }
-    .status.error {
-      background-color: #ffe0e0;
-      border: 1px solid #a00000;
-    }
-    .loading {
-      color: gray;
-      font-style: italic;
-    }
+    #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+    @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+    @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
   </style>
 </head>
 <body>
-  <h1>AvaTrade KI Dashboard (Debug)</h1>
 
-  <div id="status" class="status loading">⏳ Verbindung zu MetaApi wird getestet…</div>
+  <h1>📊 AvaTrade Dashboard (Debug-Modus)</h1>
 
-  <pre id="debugOutput" style="white-space: pre-wrap; background:#eee; padding:10px; border-radius:4px;"></pre>
+  <div id="accountStatus" class="status unknown">Lade Konto-Status…</div>
+
+  <button class="button" onclick="checkAccountStatus()">🔁 Konto-Status prüfen</button>
+  <button class="button" onclick="triggerRiskButton()">⚙️ Risiko setzen</button>
+  <button class="button" onclick="triggerPDFButton()">📄 PDF-Bericht</button>
+
+  <div id="toast"></div>
 
   <script>
-    const token = eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiIzYTFmMGRmNjBjM2UwNWIzZjg2NGE1NjQ5NTFkYTNkZSIsImFjY2Vzc1J1bGVzIjpbeyJpZCI6InRyYWRpbmctYWNjb3VudC1tYW5hZ2VtZW50LWFwaSIsIm1ldGhvZHMiOlsidHJhZGluZy1hY2NvdW50LW1hbmFnZW1lbnQtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiXSwicmVzb3VyY2VzIjpbImFjY291bnQ6JFVTRVJfSUQkOjcxZTVmZWRmLTBhNmYtNDdjMy1hMWQ3LWZjYmQ0MjM1NzZjOCJdfSx7ImlkIjoibWV0YWFwaS1yZXN0LWFwaSIsIm1ldGhvZHMiOlsibWV0YWFwaS1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciIsIndyaXRlciJdLCJyZXNvdXJjZXMiOlsiYWNjb3VudDokVVNFUl9JRCQ6NzFlNWZlZGYtMGE2Zi00N2MzLWExZDctZmNiZDQyMzU3NmM4Il19LHsiaWQiOiJtZXRhYXBpLXJwYy1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOndzOnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyJhY2NvdW50OiRVU0VSX0lEJDo3MWU1ZmVkZi0wYTZmLTQ3YzMtYTFkNy1mY2JkNDIzNTc2YzgiXX0seyJpZCI6Im1ldGFhcGktcmVhbC10aW1lLXN0cmVhbWluZy1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOndzOnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyJhY2NvdW50OiRVU0VSX0lEJDo3MWU1ZmVkZi0wYTZmLTQ3YzMtYTFkNy1mY2JkNDIzNTc2YzgiXX0seyJpZCI6Im1ldGFzdGF0cy1hcGkiLCJtZXRob2RzIjpbIm1ldGFzdGF0cy1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciJdLCJyZXNvdXJjZXMiOlsiYWNjb3VudDokVVNFUl9JRCQ6NzFlNWZlZGYtMGE2Zi00N2MzLWExZDctZmNiZDQyMzU3NmM4Il19LHsiaWQiOiJyaXNrLW1hbmFnZW1lbnQtYXBpIiwibWV0aG9kcyI6WyJyaXNrLW1hbmFnZW1lbnQtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiXSwicmVzb3VyY2VzIjpbImFjY291bnQ6JFVTRVJfSUQkOjcxZTVmZWRmLTBhNmYtNDdjMy1hMWQ3LWZjYmQ0MjM1NzZjOCJdfV0sImlnbm9yZVJhdGVMaW1pdHMiOmZhbHNlLCJ0b2tlbklkIjoiMjAyMTAyMTMiLCJpbXBlcnNvbmF0ZWQiOmZhbHNlLCJyZWFsVXNlcklkIjoiM2ExZjBkZjYwYzNlMDViM2Y4NjRhNTY0OTUxZGEzZGUiLCJpYXQiOjE3NTM2NTkwNzAsImV4cCI6MTc2MTQzNTA3MH0.IakA-DW2ajuz6w47r3hvtdK_rBRGf-Bz_UKFzzPdfhZJFEWfbLvX0i7QsSibOdVqy3V_wujj8K3omMBy-_Ti8Lr6HL58OycOH8VZIT9LdCwGjGWl_nK-NuIF6YkBzGbjp-KPL1PxxoLJ1mtqcgbfhBHeNghYkwcBgDcn9yhU1JOAVMGddd8ewvKWQIMzkveNeYuv2xBq7p8XF1j6PwloT9y0KwWl1K0qTQxrsWNrQKye1YVVSs-8A3tXGXsUHmbMahdCTIJW0X-9G7SgWeeWY-vnH5stQgUSy4uX5AX8Ia_lf3aZM0MAhQGM2a9NbTlZz7MDLBBU2RAnfzJkbGjUnwdLWT7-jqAiTuouz-Ce-2R9DZYIG8ZyjWQFvDUfLTyZrW0SYisEBMpwzCpm7AyznUZJ5TqJHp4PW3Oq4n0mzBuO4Kz_KwJfHo6uHk80RTpg7as22k8jKN1gpULmD2LwKKbLXuqENIDiZabH9lHkN-yocCmhRLeR_V4cbLJfEHo_65hcSJB09kKSJLkjGoPkTd0kOnnQuRKvmD_LmKDXHNzrdEgKNjEjEQumR_Nbkk4m20c22ywDW7_GcXPVMmGZ3iX9yYAkCiVM6oxdrYRmE3zZkpSSkGCbHk0sxaMrswcvWiJTEEJWaxJEmldEBpzfRS7tJvMdsrImZtuu5ExXp0E;  // <<< ERSETZEN ohne Anführungszeichen
-    const accountId = 71e5fedf-0a6f-47c3-a1d7-fcbd423576c8; // <<< ERSETZEN
+    const TOKEN = eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiIzYTFmMGRmNjBjM2UwNWIzZjg2NGE1NjQ5NTFkYTNkZSIsImFjY2Vzc1J1bGVzIjpbeyJpZCI6InRyYWRpbmctYWNjb3VudC1tYW5hZ2VtZW50LWFwaSIsIm1ldGhvZHMiOlsidHJhZGluZy1hY2NvdW50LW1hbmFnZW1lbnQtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiXSwicmVzb3VyY2VzIjpbImFjY291bnQ6JFVTRVJfSUQkOjcxZTVmZWRmLTBhNmYtNDdjMy1hMWQ3LWZjYmQ0MjM1NzZjOCJdfSx7ImlkIjoibWV0YWFwaS1yZXN0LWFwaSIsIm1ldGhvZHMiOlsibWV0YWFwaS1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciIsIndyaXRlciJdLCJyZXNvdXJjZXMiOlsiYWNjb3VudDokVVNFUl9JRCQ6NzFlNWZlZGYtMGE2Zi00N2MzLWExZDctZmNiZDQyMzU3NmM4Il19LHsiaWQiOiJtZXRhYXBpLXJwYy1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOndzOnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyJhY2NvdW50OiRVU0VSX0lEJDo3MWU1ZmVkZi0wYTZmLTQ3YzMtYTFkNy1mY2JkNDIzNTc2YzgiXX0seyJpZCI6Im1ldGFhcGktcmVhbC10aW1lLXN0cmVhbWluZy1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOndzOnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyJhY2NvdW50OiRVU0VSX0lEJDo3MWU1ZmVkZi0wYTZmLTQ3YzMtYTFkNy1mY2JkNDIzNTc2YzgiXX0seyJpZCI6Im1ldGFzdGF0cy1hcGkiLCJtZXRob2RzIjpbIm1ldGFzdGF0cy1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciJdLCJyZXNvdXJjZXMiOlsiYWNjb3VudDokVVNFUl9JRCQ6NzFlNWZlZGYtMGE2Zi00N2MzLWExZDctZmNiZDQyMzU3NmM4Il19LHsiaWQiOiJyaXNrLW1hbmFnZW1lbnQtYXBpIiwibWV0aG9kcyI6WyJyaXNrLW1hbmFnZW1lbnQtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiXSwicmVzb3VyY2VzIjpbImFjY291bnQ6JFVTRVJfSUQkOjcxZTVmZWRmLTBhNmYtNDdjMy1hMWQ3LWZjYmQ0MjM1NzZjOCJdfV0sImlnbm9yZVJhdGVMaW1pdHMiOmZhbHNlLCJ0b2tlbklkIjoiMjAyMTAyMTMiLCJpbXBlcnNvbmF0ZWQiOmZhbHNlLCJyZWFsVXNlcklkIjoiM2ExZjBkZjYwYzNlMDViM2Y4NjRhNTY0OTUxZGEzZGUiLCJpYXQiOjE3NTM2NTkwNzAsImV4cCI6MTc2MTQzNTA3MH0.IakA-DW2ajuz6w47r3hvtdK_rBRGf-Bz_UKFzzPdfhZJFEWfbLvX0i7QsSibOdVqy3V_wujj8K3omMBy-_Ti8Lr6HL58OycOH8VZIT9LdCwGjGWl_nK-NuIF6YkBzGbjp-KPL1PxxoLJ1mtqcgbfhBHeNghYkwcBgDcn9yhU1JOAVMGddd8ewvKWQIMzkveNeYuv2xBq7p8XF1j6PwloT9y0KwWl1K0qTQxrsWNrQKye1YVVSs-8A3tXGXsUHmbMahdCTIJW0X-9G7SgWeeWY-vnH5stQgUSy4uX5AX8Ia_lf3aZM0MAhQGM2a9NbTlZz7MDLBBU2RAnfzJkbGjUnwdLWT7-jqAiTuouz-Ce-2R9DZYIG8ZyjWQFvDUfLTyZrW0SYisEBMpwzCpm7AyznUZJ5TqJHp4PW3Oq4n0mzBuO4Kz_KwJfHo6uHk80RTpg7as22k8jKN1gpULmD2LwKKbLXuqENIDiZabH9lHkN-yocCmhRLeR_V4cbLJfEHo_65hcSJB09kKSJLkjGoPkTd0kOnnQuRKvmD_LmKDXHNzrdEgKNjEjEQumR_Nbkk4m20c22ywDW7_GcXPVMmGZ3iX9yYAkCiVM6oxdrYRmE3zZkpSSkGCbHk0sxaMrswcvWiJTEEJWaxJEmldEBpzfRS7tJvMdsrImZtuu5ExXp0E;
+    const ACCOUNT_ID = 71e5fedf-0a6f-47c3-a1d7-fcbd423576c8;
 
-    const statusDiv = document.getElementById('status');
-    const debugOutput = document.getElementById('debugOutput');
-
-    async function checkMetaApi() {
+    async function checkAccountStatus() {
+      showToast("🔍 Verbindung prüfen...");
+      const statusBox = document.getElementById('accountStatus');
       try {
-        const res = await fetch(`https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/${accountId}`, {
-          method: 'GET',
+        const res = await fetch(`https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/${ACCOUNT_ID}`, {
           headers: {
-            'auth-token': token
+            'auth-token': TOKEN
           }
         });
-
-        const result = await res.json();
-
-        if (!res.ok) {
-          statusDiv.className = 'status error';
-          statusDiv.textContent = `❌ Fehler: ${result.message || 'Unbekannter Fehler'}`;
+        if (!res.ok) throw new Error("Fehler: Status " + res.status);
+        const data = await res.json();
+        const state = data.state;
+        if (state === 'DEPLOYED') {
+          statusBox.textContent = "✅ Verbunden (DEPLOYED)";
+          statusBox.className = 'status connected';
         } else {
-          statusDiv.className = 'status ok';
-          statusDiv.textContent = `✅ Verbindung erfolgreich – Kontoname: ${result.name || 'unbekannt'}`;
-          debugOutput.textContent = JSON.stringify(result, null, 2);
+          statusBox.textContent = `⚠️ Status: ${state}`;
+          statusBox.className = 'status disconnected';
         }
       } catch (err) {
-        statusDiv.className = 'status error';
-        statusDiv.textContent = `❌ Verbindungsfehler: ${err.message}`;
-        debugOutput.textContent = err.stack;
+        statusBox.textContent = "❌ Konto nicht gefunden oder Token ungültig";
+        statusBox.className = 'status disconnected';
+        console.error("Fehler beim Abruf:", err);
+        showToast("❌ Fehler: Konto nicht erreichbar");
       }
     }
 
-    checkMetaApi();
+    function triggerRiskButton() {
+      console.log("🔧 Risiko-Button wurde geklickt");
+      showToast("⚙️ Risikoaktion ausgeführt (Debug)");
+      // Hier kannst du deine echte Risiko-API einfügen
+    }
+
+    function triggerPDFButton() {
+      console.log("📄 PDF-Button wurde geklickt");
+      showToast("📥 Bericht wird erstellt…");
+      // Hier kannst du deinen PDF-Generator-Call einfügen
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.className = "show";
+      setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    }
+
+    // Automatisch beim Laden ausführen
+    checkAccountStatus();
   </script>
 </body>
 </html>
