@@ -1,121 +1,186 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>KI CopyTrading Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #111;
-            color: white;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid #444;
-            text-align: center;
-        }
-        tr:nth-child(even) { background-color: #222; }
-        .green { color: #00ff88; }
-        .red { color: #ff4444; }
-        .yellow { color: #ffcc00; }
-        .btn {
-            background-color: #444;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .status-indicator {
-            padding: 10px;
-            background: #222;
-            border-radius: 8px;
-            margin: 5px;
-        }
-        @media (max-width: 768px) {
-            .status-bar {
-                flex-direction: column;
-                align-items: center;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AvaTrade KI-Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      color: #222;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #003366;
+      color: white;
+      padding: 12px;
+      text-align: center;
+      font-size: 1.4em;
+    }
+    .container {
+      padding: 20px;
+    }
+    .status {
+      margin: 20px 0;
+    }
+    .status span {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+    }
+    .green { background: #4caf50; }
+    .yellow { background: #fbc02d; }
+    .red { background: #f44336; }
+
+    .trade {
+      background: white;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 8px;
+      border-left: 5px solid #2196f3;
+    }
+    .btn {
+      padding: 10px 15px;
+      background: #003366;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background: #005599;
+    }
+    label {
+      font-weight: bold;
+    }
+    select, input {
+      padding: 6px;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    .filter-box {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-    <h1>Martin’s KI CopyTrading Dashboard</h1>
+  <header>
+    AvaTrade KI-Dashboard
+  </header>
 
-    <div class="status-bar">
-        <div class="status-indicator">📡 AvaSocial verbunden</div>
-        <div class="status-indicator">🤖 Modus: <b style="color:#ffcc00">Hybrid</b></div>
-        <div class="status-indicator">📲 Telegram aktiv</div>
-        <div class="status-indicator">📅 27.07.2025 01:00</div>
+  <div class="container">
+    <div id="accountBalance">Kontostand: wird geladen...</div>
+    <div id="marginStatus" class="status">Margin-Level: wird geladen...</div>
+
+    <div>
+      <label for="riskLevel">Risikoeinstellung:</label>
+      <select id="riskLevel">
+        <option value="0.5">0.5% Risiko</option>
+        <option value="1">1% Risiko</option>
+        <option value="2">2% Risiko</option>
+      </select>
+      <button class="btn" onclick="applyRisk()">Risiko übernehmen</button>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Symbol</th>
-                <th>Richtung</th>
-                <th>Lot</th>
-                <th>SL</th>
-                <th>TP</th>
-                <th>Trader</th>
-                <th>P/L</th>
-                <th>Aktion</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>EUR/USD</td>
-                <td>Buy</td>
-                <td>0.3</td>
-                <td>1.0820</td>
-                <td>1.1000</td>
-                <td>AlphaFX</td>
-                <td class="red">-12.5%</td>
-                <td><button class="btn">Schließen</button></td>
-            </tr>
-            <tr>
-                <td>GBP/JPY</td>
-                <td>Sell</td>
-                <td>0.2</td>
-                <td>181.20</td>
-                <td>178.50</td>
-                <td>SmartTrade</td>
-                <td class="green">+24.1%</td>
-                <td><button class="btn">Schließen</button></td>
-            </tr>
-            <tr>
-                <td>Gold</td>
-                <td>Buy</td>
-                <td>0.1</td>
-                <td>2320.00</td>
-                <td>2375.00</td>
-                <td>GoldBot</td>
-                <td class="yellow">-8.3%</td>
-                <td><button class="btn">Schließen</button></td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div style="margin-top:40px; text-align:center;">
-        <button class="btn">📄 PDF-Tagesreport herunterladen</button>
+    <div class="filter-box">
+      <label for="filterTrader">Filter: Trader oder KI</label>
+      <input type="text" id="filterTrader" oninput="filterTrades()" placeholder="z. B. 'KI' oder Tradername">
     </div>
+
+    <div>
+      <label>KI-Modus:</label>
+      <select id="aiMode" onchange="setAiMode(this.value)">
+        <option value="hybrid">Hybridmodus</option>
+        <option value="fullauto">Vollautomatik</option>
+      </select>
+    </div>
+
+    <div>
+      <button class="btn" onclick="downloadPDF()">📄 Tagesreport herunterladen</button>
+    </div>
+
+    <h3>Offene Positionen:</h3>
+    <div id="trades"></div>
+  </div>
+
+  <script>
+    const token = eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiIzYTFmMGRmNjBjM2UwNWIzZjg2NGE1NjQ5NTFkYTNkZSIsImFjY2Vzc1J1bGVzIjpbeyJpZCI6InRyYWRpbmctYWNjb3VudC1tYW5hZ2VtZW50LWFwaSIsIm1ldGhvZHMiOlsidHJhZGluZy1hY2NvdW50LW1hbmFnZW1lbnQtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiXSwicmVzb3VyY2VzIjpbImFjY291bnQ6JFVTRVJfSUQkOjcxZTVmZWRmLTBhNmYtNDdjMy1hMWQ3LWZjYmQ0MjM1NzZjOCJdfSx7ImlkIjoibWV0YWFwaS1yZXN0LWFwaSIsIm1ldGhvZHMiOlsibWV0YWFwaS1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciIsIndyaXRlciJdLCJyZXNvdXJjZXMiOlsiYWNjb3VudDokVVNFUl9JRCQ6NzFlNWZlZGYtMGE2Zi00N2MzLWExZDctZmNiZDQyMzU3NmM4Il19LHsiaWQiOiJtZXRhYXBpLXJwYy1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOndzOnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyJhY2NvdW50OiRVU0VSX0lEJDo3MWU1ZmVkZi0wYTZmLTQ3YzMtYTFkNy1mY2JkNDIzNTc2YzgiXX0seyJpZCI6Im1ldGFhcGktcmVhbC10aW1lLXN0cmVhbWluZy1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOndzOnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyJhY2NvdW50OiRVU0VSX0lEJDo3MWU1ZmVkZi0wYTZmLTQ3YzMtYTFkNy1mY2JkNDIzNTc2YzgiXX0seyJpZCI6Im1ldGFzdGF0cy1hcGkiLCJtZXRob2RzIjpbIm1ldGFzdGF0cy1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciJdLCJyZXNvdXJjZXMiOlsiYWNjb3VudDokVVNFUl9JRCQ6NzFlNWZlZGYtMGE2Zi00N2MzLWExZDctZmNiZDQyMzU3NmM4Il19LHsiaWQiOiJyaXNrLW1hbmFnZW1lbnQtYXBpIiwibWV0aG9kcyI6WyJyaXNrLW1hbmFnZW1lbnQtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiXSwicmVzb3VyY2VzIjpbImFjY291bnQ6JFVTRVJfSUQkOjcxZTVmZWRmLTBhNmYtNDdjMy1hMWQ3LWZjYmQ0MjM1NzZjOCJdfV0sImlnbm9yZVJhdGVMaW1pdHMiOmZhbHNlLCJ0b2tlbklkIjoiMjAyMTAyMTMiLCJpbXBlcnNvbmF0ZWQiOmZhbHNlLCJyZWFsVXNlcklkIjoiM2ExZjBkZjYwYzNlMDViM2Y4NjRhNTY0OTUxZGEzZGUiLCJpYXQiOjE3NTM2NDE1MTh9.gtlW4prjfW3yCDzOPrAZAOnWStZ_9HwfbxQGPHX5zOzI_7rzklfonHxnsbUXSrpx38i25i1BL7JUZpkcrOPf03SFutMMk9lbCeTQYJz4tgoB6_jsjsq2G5KY0bNBabvYyR7u5M4o-6JS_msQ6DXWizjMo_My0loi9XlqWo4n00doBMzlTNHkr1qpbny3-K601_rE3W9gSLq0erCeTGIcbke-xD_SVA-5RyWzEX4_MOMGaKNckyV1RLecqMhnbN5sP0s8nYhLGDhBO-zZoCo9l_TuIk_hOWfsLQE3P5F0KzVWH_-fUk6t1eKqbVeNnpY3hqkPDS4En5utz6aP2GZJ-_IpAijD3vnv7wTjg5M4IjvbupElkV2TSXwFZruipt3UjqgQHj7P6q9NuRTQuRq2wvCCFv6YC4dnfpSvMwSS7WJUwpjBTJXYbifK2cIOdYg3aeXdHWej1wPN1MB6tXh8YmLjfP0MATg8MjiQ_IS5NplbF0Y0OC8FmedO4eRMV-0TaX0p9ad4OKRXBtSnj6NN43_UQm8Ci__xPi8Dvz4Kwtm8evb34IZ9h8ppwqUWg5LIrqXWh41JIITy30GsPKow69NAdUuvDs6cfioKnkP2s210BHN9reOgel3ROkmmFhFYlmR45DV9E-WskVFTOx0VZDKdrSeNPXUHa9Q3k_x6uYM;
+    let aiMode = 'hybrid';
+    let trades = [];
+
+    async function fetchAccountInfo() {
+      const balance = 11235.43; // Placeholder, bitte live per MetaAPI ersetzen
+      const marginLevel = 84;   // Placeholder
+      document.getElementById('accountBalance').innerText = `Kontostand: ${balance.toFixed(2)} €`;
+      updateMarginStatus(marginLevel);
+    }
+
+    function updateMarginStatus(level) {
+      const el = document.getElementById('marginStatus');
+      let color = 'green';
+      if (level < 150 && level > 50) color = 'yellow';
+      if (level <= 50) color = 'red';
+      el.innerHTML = `Margin-Level: <span class="${color}">${level}%</span>`;
+    }
+
+    function displayTrades() {
+      const container = document.getElementById('trades');
+      container.innerHTML = '';
+      const filter = document.getElementById('filterTrader').value.toLowerCase();
+      trades.filter(t => t.trader.toLowerCase().includes(filter)).forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'trade';
+        div.innerHTML = `
+          <strong>${t.symbol}</strong><br>
+          Typ: ${t.type} | Lot: ${t.lot} | SL: ${t.sl} | TP: ${t.tp}<br>
+          Trader: ${t.trader}<br>
+          <button class="btn" onclick="closeTrade('${t.id}')">Schließen</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function closeTrade(id) {
+      alert(`Trade ${id} wird geschlossen...`);
+      // Implementiere hier die MetaAPI Trade Close Logik
+    }
+
+    function filterTrades() {
+      displayTrades();
+    }
+
+    function applyRisk() {
+      const level = document.getElementById('riskLevel').value;
+      alert(`Risiko-Level gesetzt auf ${level}%`);
+      // Implementiere: KI-Logik aktualisieren
+    }
+
+    function setAiMode(mode) {
+      aiMode = mode;
+      alert(`KI-Modus geändert zu: ${mode === 'hybrid' ? 'Hybrid' : 'Vollautomatik'}`);
+    }
+
+    function downloadPDF() {
+      alert('PDF-Report wird generiert...');
+      // Optional: PDFKit oder jspdf einbauen
+    }
+
+    function fetchLiveTrades() {
+      // Hier erfolgt die echte MetaAPI-Abfrage
+      trades = [
+        { id: '1234', symbol: 'EURUSD', type: 'Buy', lot: 0.1, sl: 1.095, tp: 1.115, trader: 'KI' },
+        { id: '5678', symbol: 'GBPUSD', type: 'Sell', lot: 0.2, sl: 1.285, tp: 1.245, trader: 'JohnDoe' },
+      ];
+      displayTrades();
+    }
+
+    // Initialisierung
+    fetchAccountInfo();
+    fetchLiveTrades();
+  </script>
 </body>
 </html>
