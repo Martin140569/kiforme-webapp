@@ -2,51 +2,126 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AvaTrade KI Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AvaTrade KI Dashboard (Debug)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f4f8;
+      color: #222;
+    }
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+    .green { background: #d4edda; color: #155724; }
+    .yellow { background: #fff3cd; color: #856404; }
+    .red { background: #f8d7da; color: #721c24; }
+    .position {
+      background: white;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-left: 5px solid #007bff;
+      border-radius: 4px;
+    }
+    .position .label { font-weight: bold; }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>AvaTrade KI-Dashboard</h1>
-    <div id="account-info">
-      <span id="balance">Kontostand wird geladen…</span>
-      <span id="margin-level">Margin-Level wird geladen…</span>
-    </div>
-    <div id="mode-toggle">
-      <label for="modeSwitch">Modus:</label>
-      <select id="modeSwitch">
-        <option value="hybrid">Hybridmodus</option>
-        <option value="auto">Vollautomatik</option>
-      </select>
-    </div>
-    <div>
-      <button onclick="downloadPDF()">📄 Tagesreport</button>
-      <button onclick="adjustRisk()">⚙️ Risiko einstellen</button>
-    </div>
-  </header>
+  <h1>📊 AvaTrade KI-Dashboard – Debug-Modus</h1>
+  <div id="accountStatus">Kontostand wird geladen…</div>
+  <div id="marginStatus">Margin-Level wird geladen…</div>
+  <h2>Offene Positionen</h2>
+  <div id="positions"></div>
 
-  <main>
-    <input type="text" id="filterInput" placeholder="Filtern nach Trader oder 'KI'" />
-    <table>
-      <thead>
-        <tr>
-          <th>Symbol</th>
-          <th>Lot</th>
-          <th>Richtung</th>
-          <th>SL</th>
-          <th>TP</th>
-          <th>Trader</th>
-          <th>Aktion</th>
-        </tr>
-      </thead>
-      <tbody id="positions">
-        <tr><td colspan="7">Lade Positionen…</td></tr>
-      </tbody>
-    </table>
-  </main>
+  <script type="module">
+    const metaApiToken = "HIER_DEIN_METAAPI_TOKEN";
+    const accountId = "HIER_DEINE_ACCOUNT_ID";
 
-  <script src="main.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    const baseUrl = "https://mt-client-api-v1.new-york.agiliumtrade.ai";
+    const headers = {
+      'auth-token': metaApiToken,
+      'Content-Type': 'application/json'
+    };
+
+    async function fetchAccountInfo() {
+      console.log("🔧 Starte Datenabruf…");
+      console.log("✅ MetaApi Token:", metaApiToken);
+      console.log("✅ Account-ID:", accountId);
+
+      try {
+        const accountResp = await fetch(`${baseUrl}/users/current/accounts/${accountId}`, { headers });
+        if (!accountResp.ok) throw new Error("Account nicht gefunden oder Token falsch");
+        const account = await accountResp.json();
+
+        const connectionStatus = account.connectionStatus;
+        console.log("📡 Verbindung:", connectionStatus);
+
+        if (connectionStatus !== "CONNECTED") {
+          document.getElementById("accountStatus").innerText = "⛔ Verbindung getrennt.";
+          return;
+        }
+
+        const metricsResp = await fetch(`${baseUrl}/users/current/accounts/${accountId}/metrics`, { headers });
+        const metrics = await metricsResp.json();
+
+        const balance = metrics.balance.toFixed(2);
+        const equity = metrics.equity.toFixed(2);
+        const marginLevel = parseFloat(metrics.marginLevel).toFixed(1);
+
+        // Margin-Farben setzen
+        const marginDiv = document.getElementById("marginStatus");
+        if (marginLevel > 150) {
+          marginDiv.className = "status green";
+        } else if (marginLevel > 50) {
+          marginDiv.className = "status yellow";
+        } else {
+          marginDiv.className = "status red";
+        }
+
+        document.getElementById("accountStatus").innerText = `💰 Kontostand: ${balance} USD | Eigenkapital: ${equity} USD`;
+        document.getElementById("marginStatus").innerText = `📉 Margin-Level: ${marginLevel}%`;
+
+        console.log("✅ Balance:", balance);
+        console.log("✅ Margin-Level:", marginLevel);
+
+        // Positionen laden
+        const positionsResp = await fetch(`${baseUrl}/users/current/accounts/${accountId}/open-positions`, { headers });
+        const positions = await positionsResp.json();
+        console.log("📈 Gefundene Positionen:", positions.length);
+
+        const positionsDiv = document.getElementById("positions");
+        positionsDiv.innerHTML = "";
+
+        if (positions.length === 0) {
+          positionsDiv.innerHTML = "<i>Keine offenen Positionen.</i>";
+        } else {
+          positions.forEach(pos => {
+            const div = document.createElement("div");
+            div.className = "position";
+            div.innerHTML = `
+              <div><span class="label">Symbol:</span> ${pos.symbol}</div>
+              <div><span class="label">Typ:</span> ${pos.type}</div>
+              <div><span class="label">Lots:</span> ${pos.volume}</div>
+              <div><span class="label">SL:</span> ${pos.stopLoss ?? "-"}</div>
+              <div><span class="label">TP:</span> ${pos.takeProfit ?? "-"}</div>
+              <div><span class="label">Profit:</span> ${pos.unrealizedProfit.toFixed(2)} USD</div>
+            `;
+            positionsDiv.appendChild(div);
+          });
+        }
+
+      } catch (err) {
+        console.error("❌ Fehler beim Laden:", err);
+        document.getElementById("accountStatus").innerText = "⚠️ Fehler beim Laden der Daten.";
+        document.getElementById("marginStatus").innerText = err.message;
+      }
+    }
+
+    fetchAccountInfo();
+  </script>
 </body>
 </html>
