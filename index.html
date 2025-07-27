@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AvaTrade KI Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>AvaTrade KI-Dashboard</h1>
+    <div id="account-info">
+      <span id="balance">Kontostand wird geladen…</span>
+      <span id="margin-level">Margin-Level wird geladen…</span>
+    </div>
+    <div id="mode-toggle">
+      <label for="modeSwitch">Modus:</label>
+      <select id="modeSwitch">
+        <option value="hybrid">Hybridmodus</option>
+        <option value="auto">Vollautomatik</option>
+      </select>
+    </div>
+    <div>
+      <button onclick="downloadPDF()">📄 Tagesreport</button>
+      <button onclick="adjustRisk()">⚙️ Risiko einstellen</button>
+    </div>
+  </header>
+
+  <main>
+    <input type="text" id="filterInput" placeholder="Filtern nach Trader oder 'KI'" />
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Lot</th>
+          <th>Richtung</th>
+          <th>SL</th>
+          <th>TP</th>
+          <th>Trader</th>
+          <th>Aktion</th>
+        </tr>
+      </thead>
+      <tbody id="positions">
+        <tr><td colspan="7">Lade Positionen…</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <script src="main.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</body>
+</html>
