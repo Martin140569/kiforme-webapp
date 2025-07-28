@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KI Dashboard – AvaTrade</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="script.js"></script>
+  <script defer src="report-generator.js"></script>
+</head>
+<body>
+  <header>
+    <h1>KI Dashboard – AvaTrade</h1>
+    <div class="status-container">
+      <span id="ki-status">KI-Modus: Hybrid</span>
+      <button onclick="toggleMode()">Modus wechseln</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="controls">
+      <button onclick="fetchLiveData()">🔄 AvaTrade Live-Daten laden</button>
+      <button onclick="setRiskLevel()">⚙️ Risiko einstellen</button>
+      <button onclick="generatePDF()">📄 PDF-Tagesreport</button>
+    </section>
+
+    <section id="account-summary">
+      <h2>📊 Kontostand</h2>
+      <p id="balance">Lade...</p>
+    </section>
+
+    <section id="filter">
+      <label for="traderFilter">Filter nach Trader oder KI:</label>
+      <input type="text" id="traderFilter" oninput="applyFilter()" placeholder="z.B. KI oder Tradername..." />
+    </section>
+
+    <section id="trade-list">
+      <h2>🧾 Offene Trades</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Richtung</th>
+            <th>Lot</th>
+            <th>SL</th>
+            <th>TP</th>
+            <th>Trader</th>
+            <th>Plattform</th>
+            <th>Aktion</th>
+          </tr>
+        </thead>
+        <tbody id="tradeTableBody">
+          <!-- Dynamisch per JS -->
+        </tbody>
+      </table>
+    </section>
+  </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</body>
+</html>
