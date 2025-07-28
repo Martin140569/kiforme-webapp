@@ -8,45 +8,38 @@
 </head>
 <body>
   <header>
-    <h1>AvaTrade KI-Dashboard</h1>
-    <div id="account-info">
-      <span id="balance">Kontostand wird geladen…</span>
-      <span id="margin-level">Margin-Level wird geladen…</span>
+    <h1>📊 AvaTrade KI Dashboard</h1>
+    <div id="statusBar">
+      <span id="accountBalance">Kontostand: …</span>
+      <span id="marginLevel">Margin Level: …</span>
+      <span id="kiStatus">KI-Modus: Hybrid</span>
     </div>
-    <div id="mode-toggle">
-      <label for="modeSwitch">Modus:</label>
-      <select id="modeSwitch">
-        <option value="hybrid">Hybridmodus</option>
-        <option value="auto">Vollautomatik</option>
-      </select>
-    </div>
-    <div>
-      <button onclick="downloadPDF()">📄 Tagesreport</button>
-      <button onclick="adjustRisk()">⚙️ Risiko einstellen</button>
-    </div>
+    <button onclick="toggleKIStatus()">🔁 Hybrid / Vollautomatik</button>
+    <select id="riskLevel" onchange="setRiskLevel(this.value)">
+      <option value="0.1">Risiko 0,1%</option>
+      <option value="0.5" selected>Risiko 0,5%</option>
+      <option value="1">Risiko 1%</option>
+      <option value="2">Risiko 2%</option>
+    </select>
+    <button onclick="generatePDF()">📄 PDF-Report</button>
   </header>
-
+  
   <main>
-    <input type="text" id="filterInput" placeholder="Filtern nach Trader oder 'KI'" />
-    <table>
-      <thead>
-        <tr>
-          <th>Symbol</th>
-          <th>Lot</th>
-          <th>Richtung</th>
-          <th>SL</th>
-          <th>TP</th>
-          <th>Trader</th>
-          <th>Aktion</th>
-        </tr>
-      </thead>
-      <tbody id="positions">
-        <tr><td colspan="7">Lade Positionen…</td></tr>
-      </tbody>
-    </table>
+    <section>
+      <h2>Offene Positionen</h2>
+      <input type="text" id="filterInput" oninput="filterTrades()" placeholder="Filter nach Trader/KI..."/>
+      <table id="tradeTable">
+        <thead>
+          <tr>
+            <th>Symbol</th><th>Lot</th><th>Richtung</th><th>SL</th><th>TP</th><th>Trader</th><th>Aktion</th>
+          </tr>
+        </thead>
+        <tbody id="tradeRows"></tbody>
+      </table>
+    </section>
   </main>
 
-  <script src="main.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="script.js"></script>
+  <script src="report-generator.js"></script>
 </body>
 </html>
