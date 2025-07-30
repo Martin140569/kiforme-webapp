@@ -1,7 +1,12 @@
 const axios = require("axios");
 
 module.exports = async (req, res) => {
-  const METAAPI_TOKEN = process.env.METAAPI_TOKEN;
+  const METAAPI_TOKEN = process.env.META_API_TOKEN;
+
+  // ✅ Check, ob Token gesetzt ist
+  if (!METAAPI_TOKEN) {
+    return res.status(400).json({ error: "META_API_TOKEN is not set in environment variables" });
+  }
 
   try {
     const response = await axios.get(
