@@ -1,5 +1,10 @@
 let mode = "Hybrid";
 
+window.addEventListener("DOMContentLoaded", () => {
+  fetchLiveData();
+  document.getElementById("ki-status").innerText = `KI-Modus: ${mode}`;
+});
+
 function toggleMode() {
   mode = (mode === "Hybrid") ? "Vollautomatik" : "Hybrid";
   document.getElementById("ki-status").innerText = `KI-Modus: ${mode}`;
@@ -11,50 +16,24 @@ function setRiskLevel() {
   if (level !== null) {
     alert(`Risiko auf ${level}% gesetzt.`);
     // TODO: Sende Risiko an Backend/API
-    console.log("Risiko-Level gesetzt auf:", level);
   }
 }
 
 function fetchLiveData() {
-  console.log("Live-Daten werden geladen...");
-  
-  // 👉 Hier kannst du später deine MetaAPI fetch()-Logik einsetzen
-  // Beispiel: fetch('/api/positions').then(...)
-
-  // Bis dahin: Simulierte Live-Daten
   document.getElementById("balance").innerText = "10.450,12 €";
-
   const trades = [
-    {
-      symbol: "EURUSD",
-      dir: "Buy",
-      lot: 0.2,
-      sl: 1.083,
-      tp: 1.092,
-      trader: "KI",
-      plattform: "AvaTrade"
-    },
-    {
-      symbol: "BTCUSD",
-      dir: "Sell",
-      lot: 0.1,
-      sl: 61000,
-      tp: 59000,
-      trader: "AlphaBot",
-      plattform: "AvaTrade"
-    }
+    {symbol: "EURUSD", dir: "Buy", lot: 0.2, sl: 1.083, tp: 1.092, trader: "KI", plattform: "AvaTrade"},
+    {symbol: "BTCUSD", dir: "Sell", lot: 0.1, sl: 61000, tp: 59000, trader: "AlphaBot", plattform: "AvaTrade"}
   ];
-
   renderTrades(trades);
 }
 
 function renderTrades(trades) {
   const body = document.getElementById("tradeTableBody");
   body.innerHTML = "";
-
   trades.forEach(t => {
     const row = document.createElement("tr");
-    row.className = t.dir.toLowerCase(); // für CSS: .buy, .sell
+    row.className = t.dir.toLowerCase();
     row.innerHTML = `
       <td>${t.symbol}</td>
       <td>${t.dir}</td>
@@ -67,30 +46,39 @@ function renderTrades(trades) {
     `;
     body.appendChild(row);
   });
-
-  console.log("Trades aktualisiert:", trades.length);
 }
 
 function closeTrade(symbol) {
   alert(`Trade ${symbol} wird geschlossen…`);
-  // TODO: Backend/API-Call zur Schließung
-  console.log("Trade-Schließung ausgelöst für:", symbol);
+  // TODO: Backend-Call zur Trade-Schließung
 }
 
 function applyFilter() {
   const filter = document.getElementById("traderFilter").value.toLowerCase();
   const rows = document.querySelectorAll("#tradeTableBody tr");
-
   rows.forEach(row => {
-    const match = row.innerText.toLowerCase().includes(filter);
-    row.style.display = match ? "" : "none";
+    row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
   });
-
-  console.log("Filter angewendet:", filter);
 }
 
-// 🟢 Initialisierung beim Laden der Seite
-window.addEventListener("DOMContentLoaded", () => {
-  console.log("📲 KI Dashboard gestartet");
-  fetchLiveData();
-});
+function downloadPDFReport() {
+  const today = new Date().toISOString().slice(0,10);
+  const dummyData = `
+    Tagesreport – ${today}
+    =========================
+    Kontostand: 10.450,12 €
+    KI-Modus: ${mode}
+    
+    Offene Trades:
+    - EURUSD (Buy, 0.2 Lot) – Trader: KI
+    - BTCUSD (Sell, 0.1 Lot) – Trader: AlphaBot
+  `;
+
+  const blob = new Blob([dummyData], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `KI-Report_${today}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
