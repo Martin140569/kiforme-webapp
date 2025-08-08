@@ -56,3 +56,8 @@ function applyFilter() {
     row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
   });
 }
+// Beim Laden der Seite automatisch Daten anzeigen
+window.addEventListener("DOMContentLoaded", () => {
+  console.log("App gestartet");
+  fetchLiveData();
+});
