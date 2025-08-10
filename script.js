@@ -1,53 +1,36 @@
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
   const balanceEl = document.getElementById("balance");
-  const tradesTableBody = document.querySelector("#tradesTable tbody");
-  const modeToggle = document.getElementById("modeToggle");
+  const modeEl = document.getElementById("mode");
+  const toggleBtn = document.getElementById("toggleMode");
   const riskInput = document.getElementById("riskInput");
+  const saveRiskBtn = document.getElementById("saveRisk");
 
-  let hybridMode = true;
+  let mode = "Hybrid";
 
-  async function loadAccountData() {
+  async function loadBalance() {
     try {
       const res = await fetch("/api/metaapi");
       const data = await res.json();
       if (data.error) {
-        balanceEl.textContent = `Fehler: ${data.error}`;
-        return;
+        balanceEl.textContent = "Fehler";
+        console.error(data.error);
+      } else {
+        balanceEl.textContent = data.balance || "Keine Daten";
       }
-      balanceEl.textContent = `${data.balance.toFixed(2)} USD`;
-
-      tradesTableBody.innerHTML = "";
-      data.trades.forEach(trade => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${trade.symbol}</td>
-          <td>${trade.volume}</td>
-          <td>${trade.type}</td>
-          <td>${trade.sl}</td>
-          <td>${trade.tp}</td>
-          <td>${trade.trader}</td>
-          <td><button onclick="closeTrade('${trade.id}')">Schließen</button></td>
-        `;
-        tradesTableBody.appendChild(row);
-      });
     } catch (err) {
-      balanceEl.textContent = "API-Fehler";
+      console.error(err);
+      balanceEl.textContent = "Fehler";
     }
   }
 
-  window.closeTrade = async function(tradeId) {
-    alert(`Trade ${tradeId} würde hier geschlossen werden`);
-  };
-
-  modeToggle.addEventListener("click", () => {
-    hybridMode = !hybridMode;
-    modeToggle.textContent = `Modus: ${hybridMode ? "Hybrid" : "Vollautomatik"}`;
+  toggleBtn.addEventListener("click", () => {
+    mode = mode === "Hybrid" ? "Vollautomatik" : "Hybrid";
+    modeEl.textContent = mode;
   });
 
-  riskInput.addEventListener("change", () => {
-    alert(`Risiko auf ${riskInput.value}% gesetzt`);
+  saveRiskBtn.addEventListener("click", () => {
+    alert(`Risiko auf ${riskInput.value}% gesetzt.`);
   });
 
-  loadAccountData();
-  setInterval(loadAccountData, 10000);
+  loadBalance();
 });
