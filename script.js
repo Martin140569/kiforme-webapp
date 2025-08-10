@@ -1,29 +1,22 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const balanceEl = document.getElementById("balance");
-  const kiStatusEl = document.getElementById("kiStatus");
-  const toggleModeBtn = document.getElementById("toggleMode");
+async function getBalance() {
+  const balanceDiv = document.getElementById("balance");
+  balanceDiv.textContent = "⏳ Lade...";
 
-  let kiMode = "Hybridmodus";
+  try {
+    const res = await fetch("/api/METAAPI");
+    const data = await res.json();
 
-  async function fetchBalance() {
-    try {
-      const res = await fetch("/api/metaapi");
-      const data = await res.json();
-
-      if (data.error) {
-        balanceEl.textContent = `❌ Fehler: ${data.error}`;
-      } else {
-        balanceEl.textContent = `${data.balance} USD`;
-      }
-    } catch (err) {
-      balanceEl.textContent = "❌ API-Fehler";
+    if (res.ok) {
+      balanceDiv.textContent = `${data.balance} ${data.currency}`;
+    } else {
+      balanceDiv.textContent = `❌ Fehler: ${data.error}`;
     }
+  } catch (err) {
+    balanceDiv.textContent = `⚠️ Fehler: ${err.message}`;
   }
+}
 
-  toggleModeBtn.addEventListener("click", () => {
-    kiMode = kiMode === "Hybridmodus" ? "Vollautomatik" : "Hybridmodus";
-    kiStatusEl.textContent = kiMode;
-  });
+document.getElementById("refreshBalance").addEventListener("click", getBalance);
 
-  fetchBalance();
-});
+// Beim Laden der Seite direkt ausführen
+getBalance();
