@@ -1,54 +1,52 @@
 body {
   font-family: Arial, sans-serif;
   margin: 0;
-  padding: 0;
-  background: #f4f4f4;
+  background: #f9f9f9;
+  color: #333;
 }
 
-h1 {
-  background: #333;
+header {
+  background: #0066cc;
   color: white;
-  padding: 10px;
+  padding: 1rem;
   text-align: center;
 }
 
-.status-bar {
-  background: #fff;
-  padding: 10px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
+main {
+  padding: 1rem;
 }
 
-.status-bar button {
-  padding: 6px 12px;
-  cursor: pointer;
-}
-
-.account-info {
-  text-align: center;
-  padding: 15px;
-}
-
-.trades-section {
-  padding: 10px;
+section {
+  margin-bottom: 2rem;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
 }
 
-table th, table td {
-  padding: 8px;
-  border: 1px solid #ddd;
+table, th, td {
+  border: 1px solid #ccc;
+}
+
+th, td {
+  padding: 0.5rem;
   text-align: center;
 }
 
-@media (max-width: 600px) {
-  table, th, td {
-    font-size: 12px;
-  }
+button {
+  padding: 0.5rem 1rem;
+  background: #0066cc;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #004d99;
+}
+
+input {
+  padding: 0.3rem;
+  width: 60px;
 }
