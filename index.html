@@ -7,17 +7,37 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>📊 AvaTrade Live Dashboard</h1>
-  </header>
+  <h1>📊 AvaTrade Dashboard</h1>
 
-  <main>
-    <section>
-      <h2>Kontostand</h2>
-      <div id="balance">Lade Kontostand...</div>
-      <button id="refreshBalance">🔄 Aktualisieren</button>
-    </section>
-  </main>
+  <div class="status-bar">
+    <span id="modeStatus">Modus: Hybrid</span>
+    <button id="toggleMode">🔄 Umschalten</button>
+    <input type="number" id="riskInput" placeholder="Risiko (%)" min="1" max="100">
+    <button id="setRisk">💾 Risiko setzen</button>
+  </div>
+
+  <div class="account-info">
+    <h2>Kontostand: <span id="balance">Lädt...</span></h2>
+  </div>
+
+  <div class="trades-section">
+    <h2>Offene Trades</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Lots</th>
+          <th>Typ</th>
+          <th>SL</th>
+          <th>TP</th>
+          <th>Aktion</th>
+        </tr>
+      </thead>
+      <tbody id="tradesTable">
+        <tr><td colspan="6">Lade Daten...</td></tr>
+      </tbody>
+    </table>
+  </div>
 
   <script src="script.js"></script>
 </body>
