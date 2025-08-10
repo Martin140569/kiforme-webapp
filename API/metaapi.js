@@ -1,8 +1,8 @@
 import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
-  const token = process.env.METAAPI_TOKEN; // in Vercel → Environment Variables
-  const accountId = process.env.METAAPI_ACCOUNT_ID; // in Vercel → Environment Variables
+  const token = process.env.METAAPI_TOKEN; // in Vercel setzen
+  const accountId = process.env.METAAPI_ACCOUNT_ID; // in Vercel setzen
 
   if (!token || !accountId) {
     return res.status(400).json({ error: 'Token oder Account-ID fehlt' });
