@@ -1,31 +1,32 @@
-const fetch = require("node-fetch");
+// api/metaapi.js
+import fetch from 'node-fetch';
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   try {
-    const accountId = process.env.METAAPI_ACCOUNT_ID;
     const token = process.env.METAAPI_TOKEN;
-
-    if (!accountId || !token) {
-      return res.status(500).json({ error: "METAAPI_TOKEN oder METAAPI_ACCOUNT_ID fehlt in den Umgebungsvariablen." });
+    if (!token) {
+      return res.status(500).json({ error: 'METAAPI_TOKEN not set in Environment Variables' });
     }
 
-    const url = `https://metaapi.cloud/api/v1/accounts/${accountId}/balance`;
-    const response = await fetch(url, {
+    // 🔹 Deine MetaAPI Account-ID hier eintragen:
+    const accountId = 71e5fedf-0a6f-47c3-a1d7-fcbd423576c8; // <- bitte ersetzen
+
+    const response = await fetch(`https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/${accountId}/account-information`, {
       headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
+        'auth-token': token,
+        'Content-Type': 'application/json'
       }
     });
 
     if (!response.ok) {
-      const errText = await response.text();
-      return res.status(response.status).json({ error: errText });
+      const text = await response.text();
+      return res.status(response.status).json({ error: text });
     }
 
     const data = await response.json();
     res.status(200).json(data);
 
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-};
+}
