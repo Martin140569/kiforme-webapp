@@ -1,39 +1,31 @@
-import fetch from "node-fetch";
+const fetch = require("node-fetch");
 
-export default async function handler(req, res) {
-  const token = process.env.METAAPI_TOKEN;
-  const accountId = process.env.METAAPI_ACCOUNT_ID;
-
-  if (!token || !accountId) {
-    return res.status(500).json({ error: "Fehlende API-Umgebungsvariablen" });
-  }
-
+module.exports = async (req, res) => {
   try {
-    // Balance
-    const balanceRes = await fetch(`https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/${accountId}/balance`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const balanceData = await balanceRes.json();
+    const accountId = process.env.METAAPI_ACCOUNT_ID;
+    const token = process.env.METAAPI_TOKEN;
 
-    // Trades
-    const tradesRes = await fetch(`https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/${accountId}/positions`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const tradesData = await tradesRes.json();
+    if (!accountId || !token) {
+      return res.status(500).json({ error: "METAAPI_TOKEN oder METAAPI_ACCOUNT_ID fehlt in den Umgebungsvariablen." });
+    }
 
-    res.status(200).json({
-      balance: balanceData.balance || 0,
-      trades: tradesData.map(t => ({
-        id: t.id,
-        symbol: t.symbol,
-        volume: t.volume,
-        type: t.type,
-        sl: t.sl,
-        tp: t.tp,
-        trader: t.magic || "KI"
-      }))
+    const url = `https://metaapi.cloud/api/v1/accounts/${accountId}/balance`;
+    const response = await fetch(url, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
     });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      return res.status(response.status).json({ error: errText });
+    }
+
+    const data = await response.json();
+    res.status(200).json(data);
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-}
+};
