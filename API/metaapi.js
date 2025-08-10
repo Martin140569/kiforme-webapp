@@ -1,49 +1,40 @@
-import axios from "axios";
+const axios = require("axios");
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   const token = process.env.METAAPI_TOKEN;
-  const accountId = process.env.METAAPI_ACCOUNT_ID;
+  const accountId = process.env.ACCOUNT_ID;
 
   if (!token || !accountId) {
-    console.error("❌ Environment Variables fehlen!");
-    return res.status(500).json({ error: "Server config error" });
+    return res.status(500).json({ error: "MetaAPI Zugangsdaten fehlen" });
   }
 
   try {
-    console.log("🔄 MetaAPI Request gestartet...");
+    // Account-Daten holen
+    const accountRes = await axios.get(`https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/${accountId}/account-information`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
-    // 1️⃣ Kontostand abrufen
-    const balanceResponse = await axios.get(
-      `https://metaapi.cloud/metaapi/v1/accounts/${accountId}/accountInformation`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    // Trades holen
+    const tradesRes = await axios.get(`https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/${accountId}/open-positions`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
-    console.log("✅ Balance Response:", balanceResponse.data);
+    const trades = tradesRes.data.map(t => ({
+      id: t.id,
+      symbol: t.symbol,
+      lots: t.volume,
+      type: t.type,
+      sl: t.stopLoss,
+      tp: t.takeProfit
+    }));
 
-    // 2️⃣ Offene Trades abrufen
-    const positionsResponse = await axios.get(
-      `https://metaapi.cloud/metaapi/v1/accounts/${accountId}/positions`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    res.status(200).json({
+      balance: accountRes.data.balance,
+      trades
+    });
 
-    console.log("✅ Positions Response:", positionsResponse.data);
-
-    // 3️⃣ Daten zusammenführen
-    const data = {
-      balance: balanceResponse.data?.balance ?? 0,
-      equity: balanceResponse.data?.equity ?? 0,
-      margin: balanceResponse.data?.margin ?? 0,
-      positions: positionsResponse.data || [],
-    };
-
-    return res.status(200).json(data);
-
-  } catch (error) {
-    console.error("❌ Fehler bei MetaAPI-Anfrage:", error.response?.data || error.message);
-    return res.status(500).json({ error: "MetaAPI request failed" });
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    res.status(500).json({ error: "MetaAPI Anfrage fehlgeschlagen" });
   }
-}
+};
