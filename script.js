@@ -1,36 +1,27 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const balanceEl = document.getElementById("balance");
-  const modeEl = document.getElementById("mode");
-  const toggleBtn = document.getElementById("toggleMode");
-  const riskInput = document.getElementById("riskInput");
-  const saveRiskBtn = document.getElementById("saveRisk");
+// script.js
 
-  let mode = "Hybrid";
-
-  async function loadBalance() {
-    try {
-      const res = await fetch("/api/metaapi");
-      const data = await res.json();
-      if (data.error) {
-        balanceEl.textContent = "Fehler";
-        console.error(data.error);
-      } else {
-        balanceEl.textContent = data.balance || "Keine Daten";
-      }
-    } catch (err) {
-      console.error(err);
-      balanceEl.textContent = "Fehler";
+async function ladeKontostand() {
+  try {
+    const res = await fetch('/api/metaapi');
+    const data = await res.json();
+    if (data.error) {
+      document.getElementById('balance').innerText = 'Fehler: ' + data.error;
+    } else {
+      document.getElementById('balance').innerText = `${data.balance.toFixed(2)} USD`;
     }
+  } catch (err) {
+    document.getElementById('balance').innerText = 'Fehler: ' + err.message;
   }
+}
 
-  toggleBtn.addEventListener("click", () => {
-    mode = mode === "Hybrid" ? "Vollautomatik" : "Hybrid";
-    modeEl.textContent = mode;
-  });
-
-  saveRiskBtn.addEventListener("click", () => {
-    alert(`Risiko auf ${riskInput.value}% gesetzt.`);
-  });
-
-  loadBalance();
+document.getElementById('modus-btn').addEventListener('click', () => {
+  const modusText = document.getElementById('modus-text');
+  modusText.innerText = modusText.innerText === 'Hybrid' ? 'Vollautomatik' : 'Hybrid';
 });
+
+document.getElementById('pdf-btn').addEventListener('click', () => {
+  alert('PDF-Export kommt noch 😉');
+});
+
+// Starte direkt beim Laden
+ladeKontostand();
