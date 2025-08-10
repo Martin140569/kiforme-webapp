@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     }
 
     // 🔹 Deine MetaAPI Account-ID hier eintragen:
-    const accountId = 71e5fedf-0a6f-47c3-a1d7-fcbd423576c8; // <- bitte ersetzen
+    const accountId =71e5fedf-0a6f-47c3-a1d7-fcbd423576c8; // <- bitte ersetzen
 
     const response = await fetch(`https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/${accountId}/account-information`, {
       headers: {
