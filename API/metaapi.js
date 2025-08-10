@@ -1,25 +1,49 @@
-import fetch from 'node-fetch';
+import axios from "axios";
 
 export default async function handler(req, res) {
-  const token = process.env.METAAPI_TOKEN; // in Vercel setzen
-  const accountId = process.env.METAAPI_ACCOUNT_ID; // in Vercel setzen
+  const token = process.env.METAAPI_TOKEN;
+  const accountId = process.env.METAAPI_ACCOUNT_ID;
 
   if (!token || !accountId) {
-    return res.status(400).json({ error: 'Token oder Account-ID fehlt' });
+    console.error("❌ Environment Variables fehlen!");
+    return res.status(500).json({ error: "Server config error" });
   }
 
   try {
-    const response = await fetch(`https://metaapi.cloud/v1/accounts/${accountId}/balance`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    console.log("🔄 MetaAPI Request gestartet...");
 
-    if (!response.ok) {
-      throw new Error(`MetaAPI Error: ${response.statusText}`);
-    }
+    // 1️⃣ Kontostand abrufen
+    const balanceResponse = await axios.get(
+      `https://metaapi.cloud/metaapi/v1/accounts/${accountId}/accountInformation`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
 
-    const data = await response.json();
-    res.status(200).json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.log("✅ Balance Response:", balanceResponse.data);
+
+    // 2️⃣ Offene Trades abrufen
+    const positionsResponse = await axios.get(
+      `https://metaapi.cloud/metaapi/v1/accounts/${accountId}/positions`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    console.log("✅ Positions Response:", positionsResponse.data);
+
+    // 3️⃣ Daten zusammenführen
+    const data = {
+      balance: balanceResponse.data?.balance ?? 0,
+      equity: balanceResponse.data?.equity ?? 0,
+      margin: balanceResponse.data?.margin ?? 0,
+      positions: positionsResponse.data || [],
+    };
+
+    return res.status(200).json(data);
+
+  } catch (error) {
+    console.error("❌ Fehler bei MetaAPI-Anfrage:", error.response?.data || error.message);
+    return res.status(500).json({ error: "MetaAPI request failed" });
   }
 }
