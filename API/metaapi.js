@@ -1,40 +1,39 @@
-const axios = require("axios");
+import fetch from "node-fetch";
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   const token = process.env.METAAPI_TOKEN;
-  const accountId = process.env.ACCOUNT_ID;
+  const accountId = process.env.METAAPI_ACCOUNT_ID;
 
   if (!token || !accountId) {
-    return res.status(500).json({ error: "MetaAPI Zugangsdaten fehlen" });
+    return res.status(500).json({ error: "Fehlende API-Umgebungsvariablen" });
   }
 
   try {
-    // Account-Daten holen
-    const accountRes = await axios.get(`https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/${accountId}/account-information`, {
+    // Balance
+    const balanceRes = await fetch(`https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/${accountId}/balance`, {
       headers: { Authorization: `Bearer ${token}` }
     });
+    const balanceData = await balanceRes.json();
 
-    // Trades holen
-    const tradesRes = await axios.get(`https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/${accountId}/open-positions`, {
+    // Trades
+    const tradesRes = await fetch(`https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/${accountId}/positions`, {
       headers: { Authorization: `Bearer ${token}` }
     });
-
-    const trades = tradesRes.data.map(t => ({
-      id: t.id,
-      symbol: t.symbol,
-      lots: t.volume,
-      type: t.type,
-      sl: t.stopLoss,
-      tp: t.takeProfit
-    }));
+    const tradesData = await tradesRes.json();
 
     res.status(200).json({
-      balance: accountRes.data.balance,
-      trades
+      balance: balanceData.balance || 0,
+      trades: tradesData.map(t => ({
+        id: t.id,
+        symbol: t.symbol,
+        volume: t.volume,
+        type: t.type,
+        sl: t.sl,
+        tp: t.tp,
+        trader: t.magic || "KI"
+      }))
     });
-
   } catch (err) {
-    console.error(err.response?.data || err.message);
-    res.status(500).json({ error: "MetaAPI Anfrage fehlgeschlagen" });
+    res.status(500).json({ error: err.message });
   }
-};
+}
