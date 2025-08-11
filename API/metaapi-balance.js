@@ -4,19 +4,16 @@ import fetch from 'node-fetch';
 export default async function handler(req, res) {
   try {
     const token = process.env.METAAPI_TOKEN;
-    const accountId = process.env.METAAPI_ACCOUNT_ID; // 💡 In Vercel Environment Variables setzen
-
-    if (!token || !accountId) {
-      return res.status(500).json({ error: 'METAAPI_TOKEN oder METAAPI_ACCOUNT_ID nicht gesetzt' });
+    if (!token) {
+      return res.status(500).json({ error: 'METAAPI_TOKEN not set in Environment Variables' });
     }
 
-    const url = `https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/${accountId}/account-information`;
+    // Feste Account-ID
+    const accountId = "71e5fedf-0a6f-47c3-a1d7-fcbd423576c8";
 
+    const url = `https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/${accountId}/account-information`;
     const response = await fetch(url, {
-      headers: {
-        'auth-token': token,
-        'Content-Type': 'application/json'
-      }
+      headers: { 'auth-token': token, 'Content-Type': 'application/json' }
     });
 
     if (!response.ok) {
@@ -25,9 +22,9 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    return res.status(200).json(data);
+    res.status(200).json(data);
 
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 }
