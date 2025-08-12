@@ -1,53 +1,58 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AvaTrade Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KI Trading Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <header>
-        <h1>📊 AvaTrade KI Dashboard</h1>
-        <div id="status-bar">
-            <span id="account-balance">Kontostand: Lädt...</span>
-            <span id="ki-status">KI-Modus: Hybrid</span>
-            <button id="toggle-mode">🔄 Modus wechseln</button>
-        </div>
-    </header>
+  <header>
+    <h1>📊 KI Trading Dashboard</h1>
+    <div class="status">
+      <span id="ki-status">KI aktiv (Hybridmodus)</span>
+      <button id="toggle-mode">Modus wechseln</button>
+    </div>
+  </header>
 
-    <main>
-        <section class="controls">
-            <button id="refresh-trades">🔄 Trades aktualisieren</button>
-            <button id="download-report">📄 Tagesreport</button>
-            <button id="risk-settings">⚙️ Risiko einstellen</button>
-        </section>
+  <main>
+    <section class="account-info">
+      <h2>Kontostand</h2>
+      <p id="balance">Lädt...</p>
+      <button id="update-balance">🔄 Aktualisieren</button>
+    </section>
 
-        <section>
-            <h2>Offene Trades</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Symbol</th>
-                        <th>Lotgröße</th>
-                        <th>Richtung</th>
-                        <th>SL</th>
-                        <th>TP</th>
-                        <th>Trader</th>
-                        <th>Aktion</th>
-                    </tr>
-                </thead>
-                <tbody id="trades-table">
-                    <tr><td colspan="7">Lädt...</td></tr>
-                </tbody>
-            </table>
-        </section>
-    </main>
+    <section class="trade-controls">
+      <h2>Steuerung</h2>
+      <button id="risk-btn">📈 Risiko einstellen</button>
+      <button id="download-report">📄 PDF Tagesreport</button>
+    </section>
 
-    <footer>
-        <p>© 2025 KIforME Dashboard</p>
-    </footer>
+    <section class="trade-list">
+      <h2>Offene Trades</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Lots</th>
+            <th>Richtung</th>
+            <th>SL</th>
+            <th>TP</th>
+            <th>Trader</th>
+            <th>Aktion</th>
+          </tr>
+        </thead>
+        <tbody id="trade-table">
+          <tr><td colspan="7">Keine Trades geladen</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
 
-    <script src="script.js"></script>
+  <footer>
+    <p>© 2025 KIforME – Alle Rechte vorbehalten</p>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
