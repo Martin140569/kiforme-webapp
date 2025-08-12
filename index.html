@@ -1,122 +1,56 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AvaTrade Live Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #111;
-            color: #fff;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-        }
-        header {
-            padding: 15px;
-            background: #1e1e1e;
-            font-size: 1.4rem;
-            font-weight: bold;
-        }
-        .status-bar {
-            background: #222;
-            padding: 10px;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            border-bottom: 2px solid #444;
-        }
-        .status-item {
-            margin: 5px;
-            padding: 8px 12px;
-            border-radius: 8px;
-            background: #333;
-            font-size: 0.9rem;
-        }
-        .trades {
-            margin: 20px auto;
-            width: 95%;
-            overflow-x: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #222;
-        }
-        th, td {
-            padding: 8px;
-            border-bottom: 1px solid #444;
-        }
-        th {
-            background: #333;
-        }
-        tr.buy { color: #4caf50; }
-        tr.sell { color: #f44336; }
-        button {
-            background: #4caf50;
-            border: none;
-            padding: 6px 10px;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button.close {
-            background: #f44336;
-        }
-        .controls {
-            margin: 20px auto;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        select, input {
-            padding: 6px;
-            border-radius: 5px;
-            border: none;
-            font-size: 0.9rem;
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AvaTrade KI Dashboard</title>
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <header>AvaTrade Live Dashboard</header>
+  <header class="top">
+    <h1>AvaTrade KI‑Dashboard</h1>
+  </header>
 
-    <div class="status-bar">
-        <div class="status-item">Kontostand: <span id="balance">Lade...</span> USD</div>
-        <div class="status-item">KI-Status: <span id="ki-status">Hybridmodus</span></div>
-        <div class="status-item">
-            <button id="toggle-mode">Modus wechseln</button>
-        </div>
+  <section class="controls">
+    <div class="control">
+      <div>KI‑Modus:</div>
+      <div id="modeLabel">Lade…</div>
+      <button id="toggleMode">Modus wechseln</button>
     </div>
 
-    <div class="controls">
-        <select id="traderFilter">
-            <option value="">Alle Trader</option>
-        </select>
-        <input type="number" id="riskInput" placeholder="Risiko %" min="0.1" step="0.1">
-        <button id="setRisk">Risiko setzen</button>
+    <div class="control">
+      <div>Risiko (%):</div>
+      <input id="riskInput" type="number" min="0.1" step="0.1" />
+      <button id="saveRisk">Speichern</button>
     </div>
 
-    <div class="trades">
-        <table>
-            <thead>
-                <tr>
-                    <th>Trader</th>
-                    <th>Symbol</th>
-                    <th>Lotgröße</th>
-                    <th>Typ</th>
-                    <th>SL</th>
-                    <th>TP</th>
-                    <th>Aktion</th>
-                </tr>
-            </thead>
-            <tbody id="tradeTable">
-                <tr><td colspan="7">Lade offene Positionen...</td></tr>
-            </tbody>
-        </table>
+    <div class="control">
+      <div>Kontostand:</div>
+      <div id="balance">Lade…</div>
+      <button id="refresh">🔄 Aktualisieren</button>
     </div>
+  </section>
 
-    <script src="./metaapi.js"></script>
+  <section class="trades">
+    <h2>Offene Trades</h2>
+    <div class="table-wrap">
+      <table id="tradesTable" cellspacing="0" cellpadding="0">
+        <thead>
+          <tr>
+            <th>Symbol</th><th>Seite</th><th>Lot</th><th>SL</th><th>TP</th><th>Profit</th><th>Trader</th><th>Aktion</th>
+          </tr>
+        </thead>
+        <tbody id="tradeBody">
+          <tr><td colspan="8">Lade Trades…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <small>Verbunden über Vercel → MetaAPI (Token in Vercel env)</small>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
