@@ -1,16 +1,18 @@
-:root{--bg:#0f1720;--card:#111827;--accent:#0ea5e9;--muted:#94a3b8}
-html,body{height:100%;margin:0}
-body{font-family:system-ui,Arial; background:var(--bg); color:#e6eef8; -webkit-font-smoothing:antialiased}
-.top{padding:16px;text-align:center;background:#071022}
-.controls{display:flex;flex-wrap:wrap;gap:12px;padding:12px;justify-content:center}
-.control{background:var(--card);padding:10px;border-radius:10px;min-width:160px;text-align:center}
-.control input{width:80px;padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:#0b1320;color:#e6eef8}
-button{background:var(--accent);border:none;color:#07212a;padding:8px 10px;border-radius:8px;cursor:pointer}
-.trades{padding:12px}
-.table-wrap{overflow:auto}
-table{width:100%;border-collapse:collapse;background:#0b1220}
-th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:center;font-size:14px}
-tr.buy td{color:#7ee787}
-tr.sell td{color:#ff928b}
-.foot{padding:12px;text-align:center;color:var(--muted)}
-@media(min-width:900px){.controls{justify-content:flex-start;padding:20px}}
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background: #f4f4f4;
+}
+
+h1 {
+  text-align: center;
+}
+
+#balance, #trades {
+  background: white;
+  padding: 15px;
+  margin: 10px auto;
+  border-radius: 8px;
+  max-width: 500px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
