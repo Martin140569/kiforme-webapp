@@ -1,55 +1,15 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>AvaTrade KI Dashboard</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AvaTrade Live Dashboard</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="top">
-    <h1>AvaTrade KI‑Dashboard</h1>
-  </header>
-
-  <section class="controls">
-    <div class="control">
-      <div>KI‑Modus:</div>
-      <div id="modeLabel">Lade…</div>
-      <button id="toggleMode">Modus wechseln</button>
-    </div>
-
-    <div class="control">
-      <div>Risiko (%):</div>
-      <input id="riskInput" type="number" min="0.1" step="0.1" />
-      <button id="saveRisk">Speichern</button>
-    </div>
-
-    <div class="control">
-      <div>Kontostand:</div>
-      <div id="balance">Lade…</div>
-      <button id="refresh">🔄 Aktualisieren</button>
-    </div>
-  </section>
-
-  <section class="trades">
-    <h2>Offene Trades</h2>
-    <div class="table-wrap">
-      <table id="tradesTable" cellspacing="0" cellpadding="0">
-        <thead>
-          <tr>
-            <th>Symbol</th><th>Seite</th><th>Lot</th><th>SL</th><th>TP</th><th>Profit</th><th>Trader</th><th>Aktion</th>
-          </tr>
-        </thead>
-        <tbody id="tradeBody">
-          <tr><td colspan="8">Lade Trades…</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <footer class="foot">
-    <small>Verbunden über Vercel → MetaAPI (Token in Vercel env)</small>
-  </footer>
+  <h1>📊 AvaTrade Live Dashboard</h1>
+  <div id="balance">Kontostand: Lade...</div>
+  <div id="trades">Trades werden geladen...</div>
 
   <script src="script.js"></script>
 </body>
