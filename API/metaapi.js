@@ -1,29 +1,27 @@
-import MetaApi from 'metaapi.cloud-sdk';
+// api/metaapi.js
+import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
-    try {
-        const TOKEN = "DEIN_METAAPI_TOKEN";
-        const ACCOUNT_ID = "DEINE_ACCOUNT_ID";
+  try {
+    const token = process.env.METAAPI_TOKEN; // ✅ Token aus Vercel-Umgebungsvariable
+    const accountId = process.env.METAAPI_ACCOUNT_ID; // ✅ Account ID aus Vercel-Variable
 
-        const api = new MetaApi(TOKEN);
-        const account = await api.metatraderAccountApi.getAccount(ACCOUNT_ID);
-        await account.deploy();
-        await account.waitConnected();
+    const response = await fetch(`https://mt-client-api-v1.new-york.agiliumtrade.ai/users/current/accounts/${accountId}/positions`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-        const connection = account.getRPCConnection();
-        await connection.connect();
-
-        const accountInfo = await connection.getAccountInformation();
-        const positions = await connection.getPositions();
-
-        res.status(200).json({
-            balance: accountInfo.balance,
-            equity: accountInfo.equity,
-            positions
-        });
-
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: err.message });
+    if (!response.ok) {
+      throw new Error(`MetaAPI Error: ${response.status}`);
     }
+
+    const data = await response.json();
+    res.status(200).json(data);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
 }
