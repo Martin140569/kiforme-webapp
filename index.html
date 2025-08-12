@@ -1,63 +1,53 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AvaTrade KI-Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AvaTrade Dashboard</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="header">
-    <div class="brand">AvaTrade <span class="sub">KI‑Dashboard</span></div>
-    <div class="status" id="status">Verbinde…</div>
-  </header>
-
-  <main class="container">
-    <section class="top-cards">
-      <div class="card">
-        <div class="card-title">Kontostand</div>
-        <div class="card-value" id="balance">Lade…</div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">KI‑Modus</div>
-        <div class="card-value" id="modeLabel">–</div>
-        <button id="toggleMode" class="btn">Modus wechseln</button>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Risiko %</div>
-        <input id="riskInput" type="number" min="0.1" step="0.1" />
-        <button id="saveRisk" class="btn">Speichern</button>
-      </div>
-    </section>
-
-    <section class="trades-panel">
-      <div class="panel-head">
-        <h2>Offene Trades</h2>
-        <div class="controls">
-          <input id="filterInput" placeholder="Filter nach Symbol oder Trader" />
-          <button id="refreshBtn" class="btn small">🔄</button>
+    <header>
+        <h1>📊 AvaTrade KI Dashboard</h1>
+        <div id="status-bar">
+            <span id="account-balance">Kontostand: Lädt...</span>
+            <span id="ki-status">KI-Modus: Hybrid</span>
+            <button id="toggle-mode">🔄 Modus wechseln</button>
         </div>
-      </div>
+    </header>
 
-      <div class="table-wrap">
-        <table id="tradesTable">
-          <thead>
-            <tr>
-              <th>Symbol</th><th>Seite</th><th>Lot</th><th>SL</th><th>TP</th><th>Profit</th><th>Trader</th><th>Aktion</th>
-            </tr>
-          </thead>
-          <tbody id="tradeBody">
-            <tr><td colspan="8">Lade Trades…</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+    <main>
+        <section class="controls">
+            <button id="refresh-trades">🔄 Trades aktualisieren</button>
+            <button id="download-report">📄 Tagesreport</button>
+            <button id="risk-settings">⚙️ Risiko einstellen</button>
+        </section>
 
-  <footer class="footer">Powered via MetaAPI — Token bleibt auf dem Server (Vercel env)</footer>
+        <section>
+            <h2>Offene Trades</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Lotgröße</th>
+                        <th>Richtung</th>
+                        <th>SL</th>
+                        <th>TP</th>
+                        <th>Trader</th>
+                        <th>Aktion</th>
+                    </tr>
+                </thead>
+                <tbody id="trades-table">
+                    <tr><td colspan="7">Lädt...</td></tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
 
-  <script src="script.js"></script>
+    <footer>
+        <p>© 2025 KIforME Dashboard</p>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>
