@@ -11,7 +11,10 @@ export default async function handler(req, res) {
     const base = `https://mt-client-api-v1.${region}.agiliumtrade.ai`;
     const url = `${base}/users/current/accounts/${accountId}/positions`;
 
-    const r = await fetch(url, { headers: { "auth-token": token, "Accept": "application/json" } });
+    const r = await fetch(url, {
+      headers: { "auth-token": token, "accept": "application/json" }
+    });
+
     const txt = await r.text();
     if (!r.ok) return res.status(r.status).send(txt);
 
