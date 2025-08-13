@@ -1,73 +1,163 @@
-// === Konfiguration ===
-const META_API_TOKEN = eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiIzYTFmMGRmNjBjM2UwNWIzZjg2NGE1NjQ5NTFkYTNkZSIsImFjY2Vzc1J1bGVzIjpbeyJpZCI6InRyYWRpbmctYWNjb3VudC1tYW5hZ2VtZW50LWFwaSIsIm1ldGhvZHMiOlsidHJhZGluZy1hY2NvdW50LW1hbmFnZW1lbnQtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbImFjY291bnQ6JFVTRVJfSUQkOjcxZTVmZWRmLTBhNmYtNDdjMy1hMWQ3LWZjYmQ0MjM1NzZjOCJdfSx7ImlkIjoibWV0YWFwaS1yZXN0LWFwaSIsIm1ldGhvZHMiOlsibWV0YWFwaS1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciIsIndyaXRlciJdLCJyZXNvdXJjZXMiOlsiYWNjb3VudDokVVNFUl9JRCQ6NzFlNWZlZGYtMGE2Zi00N2MzLWExZDctZmNiZDQyMzU3NmM4Il19LHsiaWQiOiJtZXRhYXBpLXJwYy1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOndzOnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyJhY2NvdW50OiRVU0VSX0lEJDo3MWU1ZmVkZi0wYTZmLTQ3YzMtYTFkNy1mY2JkNDIzNTc2YzgiXX0seyJpZCI6Im1ldGFhcGktcmVhbC10aW1lLXN0cmVhbWluZy1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOndzOnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyJhY2NvdW50OiRVU0VSX0lEJDo3MWU1ZmVkZi0wYTZmLTQ3YzMtYTFkNy1mY2JkNDIzNTc2YzgiXX0seyJpZCI6Im1ldGFzdGF0cy1hcGkiLCJtZXRob2RzIjpbIm1ldGFzdGF0cy1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciIsIndyaXRlciJdLCJyZXNvdXJjZXMiOlsiYWNjb3VudDokVVNFUl9JRCQ6NzFlNWZlZGYtMGE2Zi00N2MzLWExZDctZmNiZDQyMzU3NmM4Il19LHsiaWQiOiJyaXNrLW1hbmFnZW1lbnQtYXBpIiwibWV0aG9kcyI6WyJyaXNrLW1hbmFnZW1lbnQtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbImFjY291bnQ6JFVTRVJfSUQkOjcxZTVmZWRmLTBhNmYtNDdjMy1hMWQ3LWZjYmQ0MjM1NzZjOCJdfV0sImlnbm9yZVJhdGVMaW1pdHMiOmZhbHNlLCJ0b2tlbklkIjoiMjAyMTAyMTMiLCJpbXBlcnNvbmF0ZWQiOmZhbHNlLCJyZWFsVXNlcklkIjoiM2ExZjBkZjYwYzNlMDViM2Y4NjRhNTY0OTUxZGEzZGUiLCJpYXQiOjE3NTQ4MDY3NTUsImV4cCI6MTc2MjU4Mjc1NX0.C06UqmuH5cx3XrE5wOUpt0gWN3sNURZwZubxHceTTsEsr7AcSTYdeLj_qBiuA4YKeKdFEpHR5up3cC9fKk-dC3cvNDaBVeFUu3qgLVPr7n-YI3oLOt6ApQT4lnAqUYY2t2ngqmCMAz9zAVMF73mxJ_vUPcKlCpnlVrP8JDN-4AigHFGNC2-bbqVhzXAfHMQodNcy-Qw03cRdKpZ9HFXn--2Za_EHBtHWzWbeoRME9xI_i3QpqvW6cZZIAaBX-X05gzbR2806NeyDrq30a8PUVFc58PAdMHHvFYcuJbk6F3XD-GClxknRX4qLWStiGV84kXLawbEg8osCbA8pfOYLU3aN4meOusb016MT5dySYamGhA9FS9v1hW2fWYVIRU74S4qjchhVIlD75shhRFuQ5-LwBxs0SwCQA5kJmE9QZVOzWc2O_JoV1kCW7yOQA4XCT9zB-XM3o3EZK0DAaJu9hr2pDgglHCKyCu5K05RAZPC7zYAiKOaTPA3b1rPP4rGuojpc7rFdmGmmj5EnInIi0vf5RQEuAgR4JBlkz1jFjIPbJ_vgeKRQ84RUHuVbCYceTbUfrdiMmhVqEJY1kApBIW68EL0jaAdMIZN9lWstCAn62hcxYPDANH7E5xUIOqGsi5b8-s7OA5NEDmklq0gv1__5u-btHCK7LlMSIgiMtBE; // HIER DEIN TOKEN
-const ACCOUNT_ID = 71e5fedf-0a6f-47c3-a1d7-fcbd423576c8; // AvaTrade Account ID
+// ===== Utility =====
+const formatMoney = (num, ccy = "EUR") => {
+  if (num === null || num === undefined || isNaN(num)) return "–";
+  try { return new Intl.NumberFormat("de-DE", { style: "currency", currency: ccy }).format(Number(num)); }
+  catch { return `${Number(num).toFixed(2)} ${ccy}`; }
+};
+const el = (id) => document.getElementById(id);
 
-// === Live Kontostand abrufen ===
-async function loadBalance() {
-    try {
-        const res = await fetch(`https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/${ACCOUNT_ID}/accountInformation`, {
-            headers: { "auth-token": META_API_TOKEN }
-        });
-        const data = await res.json();
-        document.getElementById("account-balance").innerText =
-            `Kontostand: ${parseFloat(data.balance).toFixed(2)} €`;
-    } catch (err) {
-        document.getElementById("account-balance").innerText = "Kontostand: Fehler";
-    }
+// ===== State (persistiert im Browser) =====
+const state = {
+  mode: localStorage.getItem("ki-mode") || "Hybrid",
+  risk: parseFloat(localStorage.getItem("risk") || "1.0"),
+  currency: "EUR"
+};
+
+function saveState() {
+  localStorage.setItem("ki-mode", state.mode);
+  localStorage.setItem("risk", String(state.risk));
 }
 
-// === Offene Trades abrufen ===
-async function loadTrades() {
-    const tableBody = document.getElementById("trades-table");
-    tableBody.innerHTML = `<tr><td colspan="7">Lädt...</td></tr>`;
-
-    try {
-        const res = await fetch(`https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/${ACCOUNT_ID}/positions`, {
-            headers: { "auth-token": META_API_TOKEN }
-        });
-        const trades = await res.json();
-
-        if (!trades.length) {
-            tableBody.innerHTML = `<tr><td colspan="7">Keine offenen Trades</td></tr>`;
-            return;
-        }
-
-        tableBody.innerHTML = trades.map(trade => `
-            <tr>
-                <td>${trade.symbol}</td>
-                <td>${trade.volume}</td>
-                <td>${trade.type}</td>
-                <td>${trade.stopLoss || '-'}</td>
-                <td>${trade.takeProfit || '-'}</td>
-                <td>${trade.magic || 'KI'}</td>
-                <td><button onclick="closeTrade('${trade.id}')">❌ Schließen</button></td>
-            </tr>
-        `).join('');
-    } catch (err) {
-        tableBody.innerHTML = `<tr><td colspan="7">Fehler beim Laden</td></tr>`;
-    }
+// ===== UI Init =====
+function applyStateToUI() {
+  el("ki-status").textContent = `KI-Modus: ${state.mode}`;
+  el("risk-level").textContent = `${state.risk.toFixed(2)}%`;
 }
+applyStateToUI();
 
-// === Trade schließen ===
-async function closeTrade(tradeId) {
-    alert(`Trade ${tradeId} schließen (Backend-Integration nötig)`);
-}
-
-// === KI-Modus umschalten ===
-document.getElementById("toggle-mode").addEventListener("click", () => {
-    const statusEl = document.getElementById("ki-status");
-    if (statusEl.innerText.includes("Hybrid")) {
-        statusEl.innerText = "KI-Modus: Vollautomatik";
-    } else {
-        statusEl.innerText = "KI-Modus: Hybrid";
-    }
+// ===== Aktionen =====
+el("toggle-mode").addEventListener("click", () => {
+  state.mode = state.mode === "Hybrid" ? "Vollautomatik" : "Hybrid";
+  saveState();
+  applyStateToUI();
 });
 
-// === Events ===
-document.getElementById("refresh-trades").addEventListener("click", loadTrades);
-document.getElementById("download-report").addEventListener("click", () => alert("PDF-Export noch nicht aktiv"));
-document.getElementById("risk-settings").addEventListener("click", () => alert("Risiko-Einstellung noch nicht aktiv"));
+el("set-risk").addEventListener("click", () => {
+  const v = prompt("Risiko in % (z. B. 1.0):", state.risk.toString());
+  if (v === null) return;
+  const num = Number(v);
+  if (!isNaN(num) && num >= 0 && num <= 100) {
+    state.risk = num;
+    saveState();
+    applyStateToUI();
+  } else {
+    alert("Ungültiger Wert.");
+  }
+});
 
-// === Initial laden ===
-loadBalance();
-loadTrades();
+el("refresh-all").addEventListener("click", () => {
+  loadAccountInfo();
+  loadPositions();
+});
+
+el("filter").addEventListener("input", () => applyFilter());
+
+// ===== Daten laden =====
+async function loadAccountInfo() {
+  const status = el("account-status");
+  status.textContent = "Lade Kontoinformationen…";
+  try {
+    const r = await fetch("/api/metaapi/account-info");
+    if (!r.ok) throw new Error(await r.text());
+    const info = await r.json();
+
+    // Felder lt. MetaApi Doku (balance, equity, freeMargin, currency, leverage, server, …)
+    // https://metaapi.cloud/docs/client/models/metatraderAccountInformation/
+    state.currency = info.currency || "EUR";
+    el("balance").textContent = formatMoney(info.balance, state.currency);
+    el("equity").textContent = formatMoney(info.equity, state.currency);
+    el("freeMargin").textContent = formatMoney(info.freeMargin, state.currency);
+    el("currency").textContent = info.currency || "–";
+    el("leverage").textContent = info.leverage ? `${info.leverage}:1` : "–";
+    el("server").textContent = info.server || info.broker || "–";
+
+    status.textContent = "Kontoinformationen aktualisiert.";
+  } catch (e) {
+    console.error(e);
+    status.textContent = "⚠️ Fehler beim Laden der Kontoinformationen.";
+  }
+}
+
+async function loadPositions() {
+  const body = el("positions-body");
+  const status = el("positions-status");
+  body.innerHTML = `<tr><td colspan="9" class="muted">Lade…</td></tr>`;
+  status.textContent = "Lade offene Positionen…";
+  try {
+    const r = await fetch("/api/metaapi/positions");
+    if (!r.ok) throw new Error(await r.text());
+    const positions = await r.json(); // Array<MetatraderPosition>
+
+    if (!Array.isArray(positions) || positions.length === 0) {
+      body.innerHTML = `<tr><td colspan="9" class="muted">Keine offenen Positionen.</td></tr>`;
+      status.textContent = "Keine offenen Positionen.";
+      return;
+    }
+
+    body.innerHTML = positions.map(p => {
+      const type = (p.type || "").replace("POSITION_TYPE_", "");
+      const profit = (typeof p.profit === "number") ? p.profit : null;
+      return `
+        <tr data-row>
+          <td>${p.id || "-"}</td>
+          <td>${p.symbol || "-"}</td>
+          <td>${type || "-"}</td>
+          <td>${p.volume ?? "-"}</td>
+          <td>${p.openPrice ?? "-"}</td>
+          <td>${p.stopLoss ?? "-"}</td>
+          <td>${p.takeProfit ?? "-"}</td>
+          <td>${profit !== null ? formatMoney(profit, state.currency) : "-"}</td>
+          <td>
+            <button class="btn btn-danger" onclick="closePosition('${p.id}')">❌ Schließen</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    status.textContent = `Offene Positionen: ${positions.length}`;
+    applyFilter();
+  } catch (e) {
+    console.error(e);
+    body.innerHTML = `<tr><td colspan="9" class="muted">⚠️ Fehler beim Laden.</td></tr>`;
+    status.textContent = "⚠️ Fehler beim Laden der Positionen.";
+  }
+}
+
+// Filter
+function applyFilter() {
+  const q = (el("filter").value || "").toLowerCase();
+  const rows = document.querySelectorAll("#positions-body tr[data-row]");
+  rows.forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q) ? "" : "none";
+  });
+}
+
+// Position schließen -> /api/metaapi/trade (POSITION_CLOSE_ID)
+async function closePosition(positionId) {
+  if (!confirm(`Position ${positionId} schließen?`)) return;
+  const status = el("positions-status");
+  try {
+    const r = await fetch("/api/metaapi/trade", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ actionType: "POSITION_CLOSE_ID", positionId })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data?.error || r.statusText);
+
+    // MetaApi Trade Response -> stringCode === "TRADE_RETCODE_DONE" ist Erfolg
+    if (data.stringCode === "TRADE_RETCODE_DONE") {
+      status.textContent = `✅ Position ${positionId} geschlossen.`;
+      await loadPositions();
+    } else {
+      status.textContent = `⚠️ Antwort: ${data.stringCode || data.message || "Unbekannt"}`;
+    }
+  } catch (e) {
+    console.error(e);
+    status.textContent = `❌ Schließen fehlgeschlagen: ${e.message}`;
+  }
+}
+
+// Initial
+loadAccountInfo();
+loadPositions();
