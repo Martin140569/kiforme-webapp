@@ -13,15 +13,15 @@ export default async function handler(req, res) {
     const { actionType, positionId, symbol, volume, takeProfit, stopLoss } = req.body || {};
     if (!actionType) return res.status(400).json({ error: "actionType fehlt" });
 
-    const base = `https://mt-client-api-v1.${region}.agiliumtrade.ai`;
-    const url = `${base}/users/current/accounts/${accountId}/trade`;
-
     const payload = { actionType };
     if (positionId) payload.positionId = String(positionId);
     if (symbol) payload.symbol = symbol;
     if (typeof volume === "number") payload.volume = volume;
     if (typeof takeProfit === "number") payload.takeProfit = takeProfit;
     if (typeof stopLoss === "number") payload.stopLoss = stopLoss;
+
+    const base = `https://mt-client-api-v1.${region}.agiliumtrade.ai`;
+    const url = `${base}/users/current/accounts/${accountId}/trade`;
 
     const r = await fetch(url, {
       method: "POST",
@@ -34,7 +34,6 @@ export default async function handler(req, res) {
     });
 
     const txt = await r.text();
-    // Erfolg laut MetaApi-Docs: stringCode === "TRADE_RETCODE_DONE"
     if (!r.ok) return res.status(r.status).send(txt);
 
     const data = JSON.parse(txt);
