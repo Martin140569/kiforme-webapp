@@ -1,3 +1,16 @@
+async function readJsonBody(req) {
+  if (req.body && typeof req.body === "object") return req.body;
+  return await new Promise((resolve, reject) => {
+    let data = "";
+    req.on("data", chunk => (data += chunk));
+    req.on("end", () => {
+      try { resolve(data ? JSON.parse(data) : {}); }
+      catch (e) { reject(e); }
+    });
+    req.on("error", reject);
+  });
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Only POST" });
 
@@ -10,7 +23,8 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "METAAPI_TOKEN oder METAAPI_ACCOUNT_ID nicht gesetzt" });
     }
 
-    const { actionType, positionId, symbol, volume, takeProfit, stopLoss } = req.body || {};
+    const body = await readJsonBody(req);
+    const { actionType, positionId, symbol, volume, takeProfit, stopLoss } = body || {};
     if (!actionType) return res.status(400).json({ error: "actionType fehlt" });
 
     const payload = { actionType };
@@ -27,8 +41,8 @@ export default async function handler(req, res) {
       method: "POST",
       headers: {
         "auth-token": token,
-        "Content-Type": "application/json",
-        "Accept": "application/json"
+        "content-type": "application/json",
+        "accept": "application/json"
       },
       body: JSON.stringify(payload)
     });
