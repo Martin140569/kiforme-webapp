@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KI Trading Dashboard – AvaTrade</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <h1>📊 KI Trading Dashboard</h1>
+      <small>AvaTrade • MetaApi</small>
+    </div>
+    <div class="header-controls">
+      <div class="mode">
+        <span id="ki-status">KI-Modus: Hybrid</span>
+        <button id="toggle-mode" class="btn">Modus wechseln</button>
+      </div>
+      <div class="risk">
+        <span id="risk-level-label">Risiko: <strong id="risk-level">1.00%</strong></span>
+        <button id="set-risk" class="btn">Risiko einstellen</button>
+      </div>
+      <button id="refresh-all" class="btn btn-primary">🔄 Aktualisieren</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="card-header"><h2>Kontoinformationen</h2></div>
+      <div id="account-grid" class="grid">
+        <div class="metric"><div class="label">Kontostand</div><div class="value" id="balance">–</div></div>
+        <div class="metric"><div class="label">Eigenkapital</div><div class="value" id="equity">–</div></div>
+        <div class="metric"><div class="label">Freie Margin</div><div class="value" id="freeMargin">–</div></div>
+        <div class="metric"><div class="label">Währung</div><div class="value" id="currency">–</div></div>
+        <div class="metric"><div class="label">Leverage</div><div class="value" id="leverage">–</div></div>
+        <div class="metric"><div class="label">Server</div><div class="value" id="server">–</div></div>
+      </div>
+      <div id="account-status" class="status-line"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2>Offene Positionen</h2>
+        <input id="filter" class="input" placeholder="🔎 Symbol/ID/Typ filtern…" />
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th><th>Symbol</th><th>Typ</th><th>Volumen</th>
+              <th>Open</th><th>SL</th><th>TP</th><th>Profit</th><th>Aktion</th>
+            </tr>
+          </thead>
+          <tbody id="positions-body"><tr><td colspan="9" class="muted">Lade…</td></tr></tbody>
+        </table>
+      </div>
+      <div id="positions-status" class="status-line"></div>
+    </section>
+  </main>
+
+  <footer class="app-footer"><small>© 2025 KIforME</small></footer>
+  <script src="/script.js"></script>
+</body>
+</html>
