@@ -1,55 +1,41 @@
-// ===== Utility =====
-const formatMoney = (num, ccy = "EUR") => {
-  if (num === null || num === undefined || isNaN(num)) return "–";
-  try { return new Intl.NumberFormat("de-DE", { style: "currency", currency: ccy }).format(Number(num)); }
-  catch { return `${Number(num).toFixed(2)} ${ccy}`; }
-};
+// ===== Helpers =====
 const el = (id) => document.getElementById(id);
+const fmt = (n, ccy = "EUR") => {
+  if (n === null || n === undefined || isNaN(n)) return "–";
+  try { return new Intl.NumberFormat("de-DE", { style: "currency", currency: ccy }).format(Number(n)); }
+  catch { return `${Number(n).toFixed(2)} ${ccy}`; }
+};
 
-// ===== State (persistiert im Browser) =====
+// ===== State (im Browser gespeichert) =====
 const state = {
   mode: localStorage.getItem("ki-mode") || "Hybrid",
-  risk: parseFloat(localStorage.getItem("risk") || "1.0"),
+  risk: parseFloat(localStorage.getItem("risk") || "1.00"),
   currency: "EUR"
 };
-
 function saveState() {
   localStorage.setItem("ki-mode", state.mode);
-  localStorage.setItem("risk", String(state.risk));
+  localStorage.setItem("risk", state.risk.toFixed(2));
 }
-
-// ===== UI Init =====
 function applyStateToUI() {
   el("ki-status").textContent = `KI-Modus: ${state.mode}`;
   el("risk-level").textContent = `${state.risk.toFixed(2)}%`;
 }
 applyStateToUI();
 
-// ===== Aktionen =====
+// ===== UI Controls =====
 el("toggle-mode").addEventListener("click", () => {
   state.mode = state.mode === "Hybrid" ? "Vollautomatik" : "Hybrid";
-  saveState();
-  applyStateToUI();
+  saveState(); applyStateToUI();
 });
-
 el("set-risk").addEventListener("click", () => {
-  const v = prompt("Risiko in % (z. B. 1.0):", state.risk.toString());
+  const v = prompt("Risiko in % (z. B. 1.00):", state.risk.toFixed(2));
   if (v === null) return;
   const num = Number(v);
   if (!isNaN(num) && num >= 0 && num <= 100) {
-    state.risk = num;
-    saveState();
-    applyStateToUI();
-  } else {
-    alert("Ungültiger Wert.");
-  }
+    state.risk = num; saveState(); applyStateToUI();
+  } else alert("Ungültiger Wert.");
 });
-
-el("refresh-all").addEventListener("click", () => {
-  loadAccountInfo();
-  loadPositions();
-});
-
+el("refresh-all").addEventListener("click", () => { loadAccountInfo(); loadPositions(); });
 el("filter").addEventListener("input", () => applyFilter());
 
 // ===== Daten laden =====
@@ -58,19 +44,17 @@ async function loadAccountInfo() {
   status.textContent = "Lade Kontoinformationen…";
   try {
     const r = await fetch("/api/metaapi/account-info");
-    if (!r.ok) throw new Error(await r.text());
-    const info = await r.json();
+    const txt = await r.text();
+    if (!r.ok) throw new Error(txt);
+    const info = JSON.parse(txt);
 
-    // Felder lt. MetaApi Doku (balance, equity, freeMargin, currency, leverage, server, …)
-    // https://metaapi.cloud/docs/client/models/metatraderAccountInformation/
     state.currency = info.currency || "EUR";
-    el("balance").textContent = formatMoney(info.balance, state.currency);
-    el("equity").textContent = formatMoney(info.equity, state.currency);
-    el("freeMargin").textContent = formatMoney(info.freeMargin, state.currency);
+    el("balance").textContent = fmt(info.balance, state.currency);
+    el("equity").textContent = fmt(info.equity, state.currency);
+    el("freeMargin").textContent = fmt(info.freeMargin, state.currency);
     el("currency").textContent = info.currency || "–";
     el("leverage").textContent = info.leverage ? `${info.leverage}:1` : "–";
     el("server").textContent = info.server || info.broker || "–";
-
     status.textContent = "Kontoinformationen aktualisiert.";
   } catch (e) {
     console.error(e);
@@ -85,8 +69,9 @@ async function loadPositions() {
   status.textContent = "Lade offene Positionen…";
   try {
     const r = await fetch("/api/metaapi/positions");
-    if (!r.ok) throw new Error(await r.text());
-    const positions = await r.json(); // Array<MetatraderPosition>
+    const txt = await r.text();
+    if (!r.ok) throw new Error(txt);
+    const positions = JSON.parse(txt);
 
     if (!Array.isArray(positions) || positions.length === 0) {
       body.innerHTML = `<tr><td colspan="9" class="muted">Keine offenen Positionen.</td></tr>`;
@@ -106,10 +91,8 @@ async function loadPositions() {
           <td>${p.openPrice ?? "-"}</td>
           <td>${p.stopLoss ?? "-"}</td>
           <td>${p.takeProfit ?? "-"}</td>
-          <td>${profit !== null ? formatMoney(profit, state.currency) : "-"}</td>
-          <td>
-            <button class="btn btn-danger" onclick="closePosition('${p.id}')">❌ Schließen</button>
-          </td>
+          <td>${profit !== null ? fmt(profit, state.currency) : "-"}</td>
+          <td><button class="btn btn-danger" onclick="closePosition('${p.id}')">❌ Schließen</button></td>
         </tr>
       `;
     }).join("");
@@ -123,16 +106,12 @@ async function loadPositions() {
   }
 }
 
-// Filter
 function applyFilter() {
   const q = (el("filter").value || "").toLowerCase();
   const rows = document.querySelectorAll("#positions-body tr[data-row]");
-  rows.forEach(r => {
-    r.style.display = r.textContent.toLowerCase().includes(q) ? "" : "none";
-  });
+  rows.forEach(r => r.style.display = r.textContent.toLowerCase().includes(q) ? "" : "none");
 }
 
-// Position schließen -> /api/metaapi/trade (POSITION_CLOSE_ID)
 async function closePosition(positionId) {
   if (!confirm(`Position ${positionId} schließen?`)) return;
   const status = el("positions-status");
@@ -142,10 +121,10 @@ async function closePosition(positionId) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ actionType: "POSITION_CLOSE_ID", positionId })
     });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data?.error || r.statusText);
+    const txt = await r.text();
+    const data = JSON.parse(txt || "{}");
+    if (!r.ok) throw new Error(data?.error || txt || r.statusText);
 
-    // MetaApi Trade Response -> stringCode === "TRADE_RETCODE_DONE" ist Erfolg
     if (data.stringCode === "TRADE_RETCODE_DONE") {
       status.textContent = `✅ Position ${positionId} geschlossen.`;
       await loadPositions();
@@ -158,6 +137,6 @@ async function closePosition(positionId) {
   }
 }
 
-// Initial
+// Initial laden
 loadAccountInfo();
 loadPositions();
