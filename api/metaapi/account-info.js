@@ -1,26 +1,18 @@
+import axios from "axios";
+
 export default async function handler(req, res) {
   try {
-    const token = process.env.METAAPI_TOKEN;
     const accountId = process.env.METAAPI_ACCOUNT_ID;
-    const region = process.env.METAAPI_REGION || "new-york";
+    const token = process.env.METAAPI_TOKEN;
 
-    if (!token || !accountId) {
-      return res.status(500).json({ error: "METAAPI_TOKEN oder METAAPI_ACCOUNT_ID nicht gesetzt" });
-    }
+    const { data } = await axios.get(
+      `https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/${accountId}/metrics`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-    const base = `https://mt-client-api-v1.${region}.agiliumtrade.ai`;
-    const url = `${base}/users/current/accounts/${accountId}/account-information`;
-
-    const r = await fetch(url, {
-      headers: { "auth-token": token, "accept": "application/json" }
-    });
-
-    const txt = await r.text();
-    if (!r.ok) return res.status(r.status).send(txt);
-
-    const data = JSON.parse(txt);
-    return res.status(200).json(data);
-  } catch (e) {
-    return res.status(500).json({ error: e.message || String(e) });
+    res.status(200).json({ balance: data.balance, equity: data.equity });
+  } catch (error) {
+    console.error("MetaAPI Error:", error.response?.data || error.message);
+    res.status(500).json({ error: "Fehler beim Abrufen des Kontostands" });
   }
 }
